@@ -1,0 +1,10 @@
+{
+  "name": "islajs",
+  "version": "0.1.0",
+  "dependencies": {
+    "jasmine-node": "",
+    "underscore": "",
+    "pegjs": "",
+    "multimethod": ""
+  }
+}
