@@ -19,7 +19,3 @@ Run the tests
 
     $ cd path/to/islajs
     $ node_modules/jasmine-node/bin/jasmine-node spec/
-
-## Licence
-
-Open source, under the MIT licence.
