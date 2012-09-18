@@ -1,14 +1,12 @@
-var Parser = require('../parser');
 var _ = require('Underscore');
 var multimethod = require('multimethod');
 
-var getType = function(x) {
-  return Object.prototype.toString.call(x).match(/\[object ([^\]]+)\]/)[1];
-}
+var parser = require('../parser');
+var utils = require("../utils");
 
 var checkAst = multimethod()
   .dispatch(function(actual, _) {
-    return getType(actual);
+    return utils.type(actual);
   })
   .when("Array", function(actual, expected) {
     expect(actual.length).toEqual(expected.length);
@@ -24,11 +22,10 @@ var checkAst = multimethod()
     expect(actual).toEqual(expected);
   });
 
-
 describe('parser', function() {
   describe('assignment to scalar', function(){
     it('should assign a single digit number', function() {
-      checkAst(Parser.parse("mary is 1"),
+      checkAst(parser.parse("mary is 1"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
@@ -37,7 +34,7 @@ describe('parser', function() {
     });
 
     it('should assign a multi digit number', function() {
-      checkAst(Parser.parse("mary is 22345"),
+      checkAst(parser.parse("mary is 22345"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
@@ -46,7 +43,7 @@ describe('parser', function() {
     });
 
     it('should assign an identifier', function() {
-      checkAst(Parser.parse("isla is age"),
+      checkAst(parser.parse("isla is age"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -56,7 +53,7 @@ describe('parser', function() {
     });
 
     it('should assign a string in single quotes', function() {
-      checkAst(Parser.parse("isla is 'cool'"),
+      checkAst(parser.parse("isla is 'cool'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -65,7 +62,7 @@ describe('parser', function() {
     });
 
     it('should assign a string in double quotes', function() {
-      checkAst(Parser.parse("isla is \"cool\""),
+      checkAst(parser.parse("isla is \"cool\""),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -77,7 +74,7 @@ describe('parser', function() {
 
   describe('assignment to object attribute', function(){
     it('should allow assignment', function() {
-      checkAst(Parser.parse("isla age is 1"),
+      checkAst(parser.parse("isla age is 1"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{object:
@@ -90,7 +87,7 @@ describe('parser', function() {
 
   describe('type assignment', function(){
     it('should allow assignment to scalar', function() {
-      checkAst(Parser.parse("mary is a girl"),
+      checkAst(parser.parse("mary is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
@@ -99,7 +96,7 @@ describe('parser', function() {
     });
 
     it('should allow assignment to an object attribute', function() {
-      checkAst(Parser.parse("mary friend is a girl"),
+      checkAst(parser.parse("mary friend is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{object:
@@ -112,7 +109,7 @@ describe('parser', function() {
 
   describe('blocks', function(){
     it('should allow a two expression block', function() {
-      checkAst(Parser.parse("isla is 1\nmary is 2"),
+      checkAst(parser.parse("isla is 1\nmary is 2"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -126,7 +123,7 @@ describe('parser', function() {
     });
 
     it('should allow a three expression block', function() {
-      checkAst(Parser.parse("name is 'Isla'\nwrite 'la'\nwrite name"),
+      checkAst(parser.parse("name is 'Isla'\nwrite 'la'\nwrite name"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["name"]}]}]},
@@ -148,7 +145,7 @@ describe('parser', function() {
 
   describe('invocation', function() {
     it('should allow invocation with scalar variable', function() {
-      checkAst(Parser.parse("write isla"),
+      checkAst(parser.parse("write isla"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -157,7 +154,7 @@ describe('parser', function() {
     });
 
     it('should allow invocation with scalar literal', function() {
-      checkAst(Parser.parse("write 'isla'"),
+      checkAst(parser.parse("write 'isla'"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -165,7 +162,7 @@ describe('parser', function() {
     });
 
     it('should allow invocation with object attribute', function() {
-      checkAst(Parser.parse("write isla age"),
+      checkAst(parser.parse("write isla age"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -175,7 +172,7 @@ describe('parser', function() {
     });
 
     it('should not show string regression', function() {
-      checkAst(Parser.parse("write 'My name Isla'"),
+      checkAst(parser.parse("write 'My name Isla'"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -186,7 +183,7 @@ describe('parser', function() {
 
   describe('lists', function() {
     it('should allow list instantiation', function() {
-      checkAst(Parser.parse("items is a list"),
+      checkAst(parser.parse("items is a list"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{scalar: [{identifier: ["items"]}]}]},
@@ -196,7 +193,7 @@ describe('parser', function() {
     });
 
     it('should allow addition of item to list', function() {
-      checkAst(Parser.parse("add sword to items"),
+      checkAst(parser.parse("add sword to items"),
                {root: [{block: [{expression:
                                  [{list_assignment:
                                    [{list_operation: [{add: ["add"]}]},

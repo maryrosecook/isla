@@ -20,13 +20,10 @@ block
   = all:expression+ { return nnode("block", all); }
 
 expression
-  = a:assignment { return nnode("expression", [a]); }
-
-assignment
-  = type_assignment
-  / value_assignment
-  / list_assignment
-  / invocation
+  = all:type_assignment { return nnode("expression", [all]); }
+  / all:value_assignment { return nnode("expression", [all]); }
+  / all:list_assignment { return nnode("expression", [all]); }
+  / all:invocation { return nnode("expression", [all]); }
 
 type_assignment
   = a:assignee _ ia:is_a _ id:identifier nl
@@ -36,13 +33,13 @@ value_assignment
   = a:assignee _ i:is _ v:value nl
     { return nnode("value_assignment", [a, i, v]); }
 
-invocation
-  = a:identifier _ v:value nl
-    { return nnode("invocation", [a, v]); }
-
 list_assignment
   = lo:list_operation _ va:value _ tf:to_from _ as:assignee nl
     { return nnode("list_assignment", [lo, va, tf, as]); }
+
+invocation
+  = a:identifier _ v:value nl
+    { return nnode("invocation", [a, v]); }
 
 list_operation
   = all:add { return nnode("list_operation", [all]); }
@@ -109,7 +106,7 @@ keyword
 
 to = "to"
 from = "from"
-_ = [ \t\r\n]+
-identifier_char = [a-zA-Z]
+_ = [ \t\r]+
+identifier_char = [a-z]
 string_char_double = [A-Za-z0-9., ']
 string_char_single = [A-Za-z0-9., "]

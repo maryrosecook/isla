@@ -5,7 +5,6 @@
 
 ;(function() {
   var fs = require("fs");
-  var utils = require("./utils");
   var _ = require("Underscore");
   var multimethod = require('multimethod');
   var peg = require("pegjs");
@@ -13,42 +12,43 @@
   var grammar = fs.readFileSync("isla.peg", "utf-8");
   var pegParser = peg.buildParser(grammar);
 
-  var parse = function(str) {
+  this.parse = function(str) {
     str += "\n"; // auto add newline.  Dupes are fine.
-    console.log(str)
     var ast = pegParser.parse(str);
     return ast;
   };
 
   var extract = multimethod()
-    .dispatch(function(__, route) {
-      return typeof(_.first(route));
+    .dispatch(function(__, nxt) {
+      return typeof(nxt);
     })
-    .when("string", function(ast, route) {
-      var nxt = _.first(route);
+
+    .when("string", function(ast, nxt) {
       if(ast.tag === nxt) {
-        return extract(ast.c, _.rest(route));
+        return extractNext(ast.c, arguments);
       }
       else {
-        throw JSON.stringify(ast) + " is not " + nxt;
+        throw new Error(JSON.stringify(ast) + " is not " + nxt);
       }
     })
-    .when("number", function(ast, route) {
-      var nxt = _.first(route);
-      if(_.has(ast, nxt)) {
-        return extract(ast[nxt], _.rest(route));
-      }
-      else {
-        throw ast + " does not have " + nxt;
-      }
+
+    .when("number", function(ast, nxt) {
+      return extractNext(ast[nxt], arguments);
     })
-    .when("undefined", function(ast, __) {
+
+    .when("undefined", function(ast) {
       return ast;
     })
-    .default(function(a, r) {
+
+    .default(function() {
       throw "Route items must be tags or indices.";
     });
 
+  var extractNext = function(ast, args) {
+    var nextArgs = _.rest(_.rest(_.toArray(args)));
+    nextArgs.unshift(ast);
+    return extract.apply(this, nextArgs);
+  }
+
   this.extract = extract;
-  this.parse = parse;
 }).call(this);
