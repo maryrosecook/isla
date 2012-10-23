@@ -12,7 +12,6 @@
   this.getInitialEnv = function(extraTypes, initialCtx) {
     var islaCtx = {
       write: function(env, param) {
-        console.log(param);
         var out = param;
         if(utils.type(param) === "Object") {
           out = JSON.stringify(param);
