@@ -7,10 +7,6 @@
       return { tag: tag };
     }
   };
-
-  var ignore = function() {
-    return nnode("ignore");
-  }
 }
 
 start
