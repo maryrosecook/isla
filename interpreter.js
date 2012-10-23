@@ -59,7 +59,6 @@
 
     .when("list_assignment", function(ast, env) {
       var node = parser.extract(ast, "list_assignment");
-      console.log(node)
       var assignee = node[3];
       var currentListEval = evaluateValue(parser.extract(assignee, "assignee", 0), env);
       if(currentListEval.val === undefined) { // no such list - show error
