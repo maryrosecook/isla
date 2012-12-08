@@ -1,8 +1,8 @@
 var _ = require('Underscore');
 var multimethod = require('multimethod');
 
-var parser = require('../parser');
-var utils = require("../utils");
+var parser = require('../src/parser').Parser;
+var utils = require("../src/utils").Utils;
 
 var checkAst = multimethod()
   .dispatch(function(actual, _) {

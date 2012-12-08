@@ -3,22 +3,36 @@
   Executes abstract syntax tree.
 */
 
-;(function() {
-  var _ = require("Underscore");
-  var multimethod = require('multimethod');
+;(function(exports) {
+  var Isla, _, multimethod;
+  if(typeof module !== 'undefined' && module.exports) { // node
+    _ = require("Underscore");
+    multimethod = require('multimethod');
+    Isla = {};
+    Isla.Utils = require('./utils').Utils;
+    Isla.Library = require('./library').Library;
+    Isla.Parser = require('./parser').Parser;
+  } else { // browser
+    _ = window._;
+    multimethod = window.multimethod;
+    Isla = window.Isla;
+  }
 
-  var library = require('./library');
-  var parser = require('./parser');
-  var utils = require('./utils');
+  exports.Interpreter = {};
 
-  var interpret = multimethod()
+  // takes raw Isla code, parses then interprets
+  exports.Interpreter.interpret = function(code, env) {
+    return interpretAst(Isla.Parser.parse(code), env);
+  };
+
+  var interpretAst = multimethod()
     .dispatch(function(ast, env) {
       return ast.tag;
     })
 
     .when("root", function(ast, env) {
       if(env === undefined) {
-        env = library.getInitialEnv();
+        env = Isla.Library.getInitialEnv();
       }
 
       return runSequence(ast.c, env);
@@ -29,22 +43,22 @@
     })
 
     .when("expression", function(ast, env) {
-      return interpret(ast.c[0], env);
+      return interpretAst(ast.c[0], env);
     })
 
     .when("value_assignment", function(ast, env) {
-      var node = parser.extract(ast, "value_assignment");
+      var node = Isla.Parser.extract(ast, "value_assignment");
       var assignee = node[0];
-      var valueNode = interpret(node[2], env);
+      var valueNode = interpretAst(node[2], env);
       var value = valueNode.ref === undefined ? valueNode.val : { ref: valueNode.ref };
       var ctx = assign(env.ctx, assignee, value);
       return nreturn(ctx);
     })
 
     .when("type_assignment", function(ast, env) {
-      var node = parser.extract(ast, "type_assignment");
+      var node = Isla.Parser.extract(ast, "type_assignment");
       var assignee = node[0];
-      var typeIdentifier = interpret(node[2], env);
+      var typeIdentifier = interpretAst(node[2], env);
 
       var typeFn = env.ctx.types[typeIdentifier];
       if(typeFn === undefined) {
@@ -58,19 +72,19 @@
     })
 
     .when("list_assignment", function(ast, env) {
-      var node = parser.extract(ast, "list_assignment");
+      var node = Isla.Parser.extract(ast, "list_assignment");
       var assignee = node[3];
-      var currentListEval = evaluateValue(parser.extract(assignee, "assignee", 0), env);
+      var currentListEval = evaluateValue(Isla.Parser.extract(assignee, "assignee", 0), env);
       if(currentListEval.val === undefined) { // no such list - show error
         var ref = currentListEval.ref;
         throw Error("I do not know of a list called "
-                    + (utils.type(currentListEval.ref) === "Array"
+                    + (Isla.Utils.type(currentListEval.ref) === "Array"
                        ? ref[0] + " " + ref[1] : ref)
                     + ".");
       }
       else {
-        var operation = parser.extract(node, 0, "list_operation", 0).tag;
-        var itemEval = interpret(parser.extract(node, 1), env);
+        var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
+        var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
         var item = itemEval.ref === undefined ? itemEval.val : { ref: itemEval.ref };
 
         var list = currentListEval.val;
@@ -83,27 +97,27 @@
 
 
     .when("invocation", function(ast, env) {
-      var fn = resolve({ ref: interpret(parser.extract(ast, "invocation", 0), env) }, env);
-      var param = interpret(parser.extract(ast, "invocation", 1), env).val;
+      var fn = resolve({ ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env) }, env);
+      var param = interpretAst(Isla.Parser.extract(ast, "invocation", 1), env).val;
       var returnVal = fn(env, param);
       return nreturn(env.ctx, returnVal);
     })
 
     .when("value", function(ast, env) {
-      var node = parser.extract(ast, "value");
+      var node = Isla.Parser.extract(ast, "value");
       return evaluateValue(node[0], env);
     })
 
     .when("integer", function(ast, env) {
-      return parser.extract(ast, "integer", 0);
+      return Isla.Parser.extract(ast, "integer", 0);
     })
 
     .when("string", function(ast, env) {
-      return parser.extract(ast, "string", 0);
+      return Isla.Parser.extract(ast, "string", 0);
     })
 
     .when("identifier", function(ast, env) {
-      return parser.extract(ast, "identifier", 0);
+      return Isla.Parser.extract(ast, "identifier", 0);
     })
 
     .default(function(ast, env) {
@@ -117,7 +131,7 @@
     })
 
     .when("literal", function(node, env) {
-      return { val: interpret(node.c[0], env) };
+      return { val: interpretAst(node.c[0], env) };
     })
 
     .when("variable", function(node, env) {
@@ -125,7 +139,7 @@
     })
 
     .when("scalar", function(node, env) {
-      var identifier = interpret(node.c[0], env);
+      var identifier = interpretAst(node.c[0], env);
       return { ref: identifier, val: env.ctx[identifier] };
     })
 
@@ -147,16 +161,16 @@
     })
 
     .when("scalar", function(ctx, assigneeNode, value) {
-      var identifier = parser.extract(assigneeNode, "assignee", 0, "scalar", 0,
+      var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0, "scalar", 0,
                                                     "identifier", 0);
       ctx[identifier] = value;
       return ctx;
     })
 
     .when("object", function(ctx, assigneeNode, value) {
-      var objectNode = parser.extract(assigneeNode, "assignee", 0, "object");
-      var objectIdentifier = parser.extract(objectNode, 0, "identifier", 0);
-      var slotIdentifier = parser.extract(objectNode, 1, "identifier", 0);
+      var objectNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "object");
+      var objectIdentifier = Isla.Parser.extract(objectNode, 0, "identifier", 0);
+      var slotIdentifier = Isla.Parser.extract(objectNode, 1, "identifier", 0);
 
       ctx[objectIdentifier][slotIdentifier] = value;
       return ctx;
@@ -165,10 +179,10 @@
 
   var resolve = multimethod()
     .dispatch(function(thing) {
-      if(thing instanceof library.IslaList) {
+      if(thing instanceof Isla.Library.IslaList) {
         return "list";
       }
-      else if(utils.type(thing) === "Object") {
+      else if(Isla.Utils.type(thing) === "Object") {
         return thing.ref === undefined ? "object" : "ref";
       }
     })
@@ -189,7 +203,7 @@
 
     .when("list", function(thing, env) {
       var items = thing.items();
-      var resolvedList = new library.IslaList();
+      var resolvedList = new Isla.Library.IslaList();
       for(var i = 0; i < items.length; i++) {
         resolvedList.add(resolve(items[i], env));
       }
@@ -201,14 +215,12 @@
       return thing;
     })
 
-
-
   var runSequence = function(nodes, env) {
     if(nodes.length === 0) {
       return env;
     }
     else {
-      return runSequence(_.rest(nodes), interpret(_.first(nodes), rmRet(env)));
+      return runSequence(_.rest(nodes), interpretAst(_.first(nodes), rmRet(env)));
     }
   }
 
@@ -232,6 +244,5 @@
     }
   }
 
-  this.resolve = resolve;
-  this.interpret = interpret;
-}).call(this);
+  exports.Interpreter.resolve = resolve;
+})(typeof exports === 'undefined' ? this.Isla : exports);

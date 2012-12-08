@@ -3,27 +3,37 @@
   Defines the Isla built in library of functions and types.
 */
 
-;(function() {
-  var _ = require("Underscore");
-  var multimethod = require('multimethod');
+;(function(exports) {
+  var Isla, _, multimethod;
+  if(typeof module !== 'undefined' && module.exports) { // node
+    _ = require("Underscore");
+    multimethod = require('multimethod');
+    Isla = {};
+    Isla.Utils = require('./utils').Utils;
+  } else { // browser
+    _ = window._;
+    multimethod = window.multimethod;
+    Isla = window.Isla;
+  }
 
-  var utils = require('./utils');
+  exports.Library = {};
 
-  this.getInitialEnv = function(extraTypes, initialCtx) {
+  exports.Library.getInitialEnv = function(extraTypes, initialCtx) {
     var islaCtx = {
       write: function(env, param) {
         var out = param;
-        if(utils.type(param) === "Object") {
+        if(Isla.Utils.type(param) === "Object") {
           out = JSON.stringify(param);
         }
 
         return out;
       },
 
-      types: utils.merge(extraTypes, {
+      types: Isla.Utils.merge(extraTypes, {
         list: function() {
           return new IslaList();
         },
+
         generic: function() {
           return {};
         }
@@ -31,7 +41,7 @@
     };
 
     if(initialCtx !== undefined) {
-      islaCtx = utils.merge(islaCtx, initialCtx);
+      islaCtx = Isla.Utils.merge(islaCtx, initialCtx);
     }
 
     return {
@@ -45,7 +55,7 @@
 
     this.add = multimethod()
       .dispatch(function(thing) {
-        return utils.type(thing);
+        return Isla.Utils.type(thing);
       })
 
       .when("Object", function(thing) { // note: will always be refs
@@ -63,7 +73,7 @@
 
     this.remove = multimethod()
       .dispatch(function(thing) {
-        return utils.type(thing);
+        return Isla.Utils.type(thing);
       })
 
       .when("Object", function(thing) { // note: will always be refs
@@ -89,5 +99,5 @@
     };
   }
 
-  this.IslaList = IslaList;
-}).call(this);
+  exports.Library.IslaList = IslaList;
+})(typeof exports === 'undefined' ? this.Isla : exports);

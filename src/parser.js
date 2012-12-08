@@ -3,16 +3,26 @@
   Turns stream of tokens into abstract syntax tree.
 */
 
-;(function() {
-  var fs = require("fs");
-  var _ = require("Underscore");
-  var multimethod = require('multimethod');
-  var peg = require("pegjs");
+;(function(exports) {
+  var Isla, _, multimethod, pegjs;
+  if(typeof module !== 'undefined' && module.exports) { // node
+    _ = require("Underscore");
+    multimethod = require('multimethod');
+    pegjs = require("pegjs");
+    Isla = {};
+    Isla.Grammar = require('./grammar').Grammar;
+  } else { // browser
+    _ = window._;
+    multimethod = window.multimethod;
+    pegjs = window.PEG;
+    Isla = window.Isla;
+  }
 
-  var grammar = fs.readFileSync("isla.peg", "utf-8");
-  var pegParser = peg.buildParser(grammar);
+  var pegParser = pegjs.buildParser(Isla.Grammar.peg);
 
-  this.parse = function(str) {
+  exports.Parser = {};
+
+  exports.Parser.parse = function(str) {
     str += "\n"; // auto add newline.  Dupes are fine.
     var ast = pegParser.parse(str);
     return ast;
@@ -50,5 +60,5 @@
     return extract.apply(this, nextArgs);
   }
 
-  this.extract = extract;
-}).call(this);
+  exports.Parser.extract = extract;
+})(typeof exports === 'undefined' ? this.Isla : exports);

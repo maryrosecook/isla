@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Isla client side test</title>
+
+    <script src="/resources/head.loader.js"></script>
+    <script type="text/javascript">
+      head.js("/node_modules/underscore/underscore-min.js",
+              "/node_modules/multimethod/multimethod-min.js",
+              "/node_modules/pegjs/lib/peg.js",
+              "/src/isla.js",
+              "/src/utils.js",
+              "/src/grammar.js",
+              "/src/library.js",
+              "/src/parser.js",
+              "/src/interpreter.js"
+             );
+    </script>
+  </head>
+  <body>
+    Type <code>Isla.Interpreter.interpret("write 'Hello, world.'");</code> into the JS console to see Isla running in the browser.
+  </body>
+</html>
