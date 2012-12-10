@@ -4,9 +4,11 @@
 * http://maryrosecook.com
 * maryrosecook@maryrosecook.com
 
-An interpreter for Isla in JavaScript.
+A programming language for children.  An interpreter in JavaScript.
 
-## Get the code
+(Clojure compiler is at github.com/maryrosecook/islaclj)
+
+## Install
 
 Install Node.js and npm: https://github.com/isaacs/npm
 
@@ -16,9 +18,9 @@ Install Isla
     $ cd path/to/isla
     $ npm install
 
-## Use the code
+## Run
 
-### node
+### Node.js
 
     var Isla = require('../src/isla').Isla;
     Isla.Interpreter.interpret("write 'Hello, world.'");
