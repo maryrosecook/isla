@@ -170,7 +170,7 @@
 
     .when("scalar", function(ctx, assigneeNode, value) {
       var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0,
-                                            "scalar", 0, "identifier", 0);
+                                           "scalar", 0, "identifier", 0);
       ctx[identifier] = value;
       return ctx;
     })
@@ -184,8 +184,7 @@
 
       ctx[objectIdentifier][slotIdentifier] = value;
       return ctx;
-    })
-
+    });
 
   var resolve = multimethod()
     .dispatch(function(thing) {
