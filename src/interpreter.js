@@ -50,7 +50,8 @@
       var node = Isla.Parser.extract(ast, "value_assignment");
       var assignee = node[0];
       var valueNode = interpretAst(node[2], env);
-      var value = valueNode.ref === undefined ? valueNode.val : { ref: valueNode.ref };
+      var value = valueNode.ref === undefined ? valueNode.val :
+                                                { ref: valueNode.ref };
       var ctx = assign(env.ctx, assignee, value);
       return nreturn(ctx);
     })
@@ -74,7 +75,9 @@
     .when("list_assignment", function(ast, env) {
       var node = Isla.Parser.extract(ast, "list_assignment");
       var assignee = node[3];
-      var currentListEval = evaluateValue(Isla.Parser.extract(assignee, "assignee", 0), env);
+      var currentListEval = evaluateValue(Isla.Parser.extract(assignee,
+                                                              "assignee", 0),
+                                                              env);
       if(currentListEval.val === undefined) { // no such list - show error
         var ref = currentListEval.ref;
         throw Error("I do not know of a list called "
@@ -85,7 +88,8 @@
       else {
         var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
         var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
-        var item = itemEval.ref === undefined ? itemEval.val : { ref: itemEval.ref };
+        var item = itemEval.ref === undefined ? itemEval.val :
+                                                { ref: itemEval.ref };
 
         var list = currentListEval.val;
         list[operation](item);
@@ -97,8 +101,11 @@
 
 
     .when("invocation", function(ast, env) {
-      var fn = resolve({ ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env) }, env);
-      var param = interpretAst(Isla.Parser.extract(ast, "invocation", 1), env).val;
+      var fn = resolve({
+        ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env)
+      }, env);
+      var param = interpretAst(Isla.Parser.extract(ast, "invocation", 1),
+                               env).val;
       var returnVal = fn(env, param);
       return nreturn(env.ctx, returnVal);
     })
@@ -147,8 +154,9 @@
       // make more specific
       var objId = node.c[0].c[0];
       var attrId = node.c[1].c[0];
-      var val = env.ctx[objId] !== undefined && env.ctx[objId][attrId] !== undefined ?
-        env.ctx[objId][attrId] : undefined;
+      var val = env.ctx[objId] !== undefined &&
+                env.ctx[objId][attrId] !== undefined ?
+                env.ctx[objId][attrId] : undefined;
       return {
         ref: [objId, attrId], // won't work if assign obj-attr to var
         val: val
@@ -161,15 +169,17 @@
     })
 
     .when("scalar", function(ctx, assigneeNode, value) {
-      var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0, "scalar", 0,
-                                                    "identifier", 0);
+      var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0,
+                                            "scalar", 0, "identifier", 0);
       ctx[identifier] = value;
       return ctx;
     })
 
     .when("object", function(ctx, assigneeNode, value) {
-      var objectNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "object");
-      var objectIdentifier = Isla.Parser.extract(objectNode, 0, "identifier", 0);
+      var objectNode = Isla.Parser.extract(assigneeNode,
+                                           "assignee", 0, "object");
+      var objectIdentifier = Isla.Parser.extract(objectNode,
+                                                 0, "identifier", 0);
       var slotIdentifier = Isla.Parser.extract(objectNode, 1, "identifier", 0);
 
       ctx[objectIdentifier][slotIdentifier] = value;
@@ -220,7 +230,8 @@
       return env;
     }
     else {
-      return runSequence(_.rest(nodes), interpretAst(_.first(nodes), rmRet(env)));
+      return runSequence(_.rest(nodes), interpretAst(_.first(nodes),
+                         rmRet(env)));
     }
   }
 
