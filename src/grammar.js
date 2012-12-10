@@ -107,7 +107,7 @@
     "to = 'to'",
     "from = 'from'",
     "_ = [ \\t\\r]+",
-    "identifier_char = [a-z]",
+    "identifier_char = [a-z0-9]",
     "string_char_double = [A-Za-z0-9., ']",
     "string_char_single = [A-Za-z0-9., \"]"
   ];
