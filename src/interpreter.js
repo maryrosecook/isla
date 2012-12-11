@@ -50,10 +50,9 @@
       var node = Isla.Parser.extract(ast, "value_assignment");
       var assignee = node[0];
       var valueNode = interpretAst(node[2], env);
-      var value = valueNode.ref === undefined ? valueNode.val :
-                                                { ref: valueNode.ref };
-      var ctx = assign(env.ctx, assignee, value);
-      return nreturn(ctx);
+      var value = assignmentValue(valueNode);
+      var env = assign(env, assignee, value);
+      return nreturn(env.ctx);
     })
 
     .when("type_assignment", function(ast, env) {
@@ -67,9 +66,8 @@
       }
 
       var value = instantiateType(typeFn, typeIdentifier);
-
-      var ctx = assign(env.ctx, assignee, value);
-      return nreturn(ctx);
+      var env = assign(env, assignee, value);
+      return nreturn(env.ctx);
     })
 
     .when("list_assignment", function(ast, env) {
@@ -88,17 +86,15 @@
       else {
         var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
         var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
-        var item = itemEval.ref === undefined ? itemEval.val :
-                                                { ref: itemEval.ref };
+        var item = assignmentValue(itemEval);
 
         var list = currentListEval.val;
         list[operation](item);
 
-        var newCtx = assign(env.ctx, assignee, currentListEval.val);
-        return nreturn(newCtx);
+        var env = assign(env, assignee, currentListEval.val);
+        return nreturn(env.ctx);
       }
     })
-
 
     .when("invocation", function(ast, env) {
       var fn = resolve({
@@ -130,7 +126,6 @@
     .default(function(ast, env) {
       throw "You've forgotten a tag type.";
     });
-
 
   var evaluateValue = multimethod()
     .dispatch(function(node, env) {
@@ -168,22 +163,40 @@
       return assigneeNode.c[0].tag;
     })
 
-    .when("scalar", function(ctx, assigneeNode, value) {
+    .when("scalar", function(env, assigneeNode, value) {
       var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0,
                                            "scalar", 0, "identifier", 0);
-      ctx[identifier] = value;
-      return ctx;
+      env.ctx[identifier] = value;
+      return env;
     })
 
-    .when("object", function(ctx, assigneeNode, value) {
-      var objectNode = Isla.Parser.extract(assigneeNode,
-                                           "assignee", 0, "object");
-      var objectIdentifier = Isla.Parser.extract(objectNode,
-                                                 0, "identifier", 0);
-      var slotIdentifier = Isla.Parser.extract(objectNode, 1, "identifier", 0);
+    .when("object", function(env, assigneeNode, value) {
+      var objNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "object");
+      var initObjIdentifier = Isla.Parser.extract(objNode, 0, "identifier", 0);
+      var objIdentifier = canonical(initObjIdentifier, env);
+      var slotIdentifier = Isla.Parser.extract(objNode, 1, "identifier", 0);
+      env.ctx[objIdentifier][slotIdentifier] = value;
+      return env;
+    });
 
-      ctx[objectIdentifier][slotIdentifier] = value;
-      return ctx;
+  // returns appropriate value for valueNode being assigned
+  // actual value for primitives, refs
+  var assignmentValue = multimethod()
+    .dispatch(function(valueNode) {
+      return typeof(valueNode.val);
+    })
+
+    .when("string", function(valueNode) {
+      return valueNode.val;
+    })
+
+    .when("number", function(valueNode) {
+      return valueNode.val;
+    })
+
+    .default(function(valueNode) {
+      return valueNode.ref === undefined ? valueNode.val :
+                                           { ref: valueNode.ref };
     });
 
   var resolve = multimethod()
@@ -222,7 +235,16 @@
 
     .default(function(thing) {
       return thing;
-    })
+    });
+
+  var canonical = function(identifier, env) {
+    var next = env.ctx[identifier];
+    if (next.ref !== undefined) {
+      return canonical(next.ref, env);
+    } else {
+      return identifier;
+    }
+  };
 
   var runSequence = function(nodes, env) {
     if(nodes.length === 0) {

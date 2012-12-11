@@ -34,6 +34,78 @@ describe('interpreter', function() {
       var env = interpreter.interpret(code);
       expect(interpreter.resolve({ ref: "mary" }, env).friend.age).toEqual(1);
     });
+
+    it('should update original when ref attr changed', function() {
+      var code = "mary is a person\na is mary\na age is 1";
+      var env = interpreter.interpret(code);
+      expect(env.ctx.mary.age).toEqual(1);
+      expect(interpreter.resolve({ ref:"a" }, env).age).toEqual(1);
+    });
+  });
+
+  describe('assignment, references and object types', function(){
+    describe('scalars', function(){
+      it('should copy by value when integer assigned', function() {
+        var code = "a is 1\nb is a\na is 2";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.a).toEqual(2);
+        expect(env.ctx.b).toEqual(1);
+      });
+
+      it('should copy by value when string assigned', function() {
+        var code = "a is '1'\nb is a\na is '2'";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.a).toEqual("2");
+        expect(env.ctx.b).toEqual("1");
+      });
+
+      it('should use ref when obj assigned', function() {
+        var code = "mary is a person\na is mary\nb is mary\na age is 1";
+        var env = interpreter.interpret(code);
+        expect(interpreter.resolve(env.ctx.a, env).age).toEqual(1);
+        expect(interpreter.resolve(env.ctx.b, env).age).toEqual(1);
+      });
+    });
+
+    describe('scalar assigned to object attribute', function(){
+      it('should copy by value when integer assigned', function() {
+        var code = "mary is a person\nx is 1\nmary age is x\nx is 2";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.mary.age).toEqual(1);
+        expect(env.ctx.x).toEqual(2);
+      });
+
+      it('should use ref when obj assigned', function() {
+        var code = "x is a person\ny is a person\ny age is 1\nx friend is y\ny age is 2";
+        var env = interpreter.interpret(code);
+        expect(interpreter.resolve(env.ctx.x.friend, env).age).toEqual(2);
+        expect(env.ctx.y.age).toEqual(2);
+      });
+    });
+
+    describe('object attribute assigned to scalar', function(){
+      it('should copy when obj primitive obj attr assigned', function() {
+        var code = "x is a person\nx age is 1\ny is x age\nx age is 2";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.x.age).toEqual(2);
+        expect(env.ctx.y).toEqual(1);
+      });
+
+      // not possible - can't syntax does not allow x friend age is 2
+      it('should use ref when obj assigned', function() {});
+    });
+
+    describe('object attribute assigned to object attribute', function(){
+      it('should copy when obj primitive obj attr assigned', function() {
+        var code = "x is a person\ny is a person\nx age is 1\ny age is x age\nx age is 2";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.x.age).toEqual(2);
+        expect(env.ctx.y.age).toEqual(1);
+      });
+
+      // not possible - can't syntax does not allow x friend age is 2
+      it('should use ref when obj assigned', function() {});
+    });
   });
 
   describe('invocation', function(){
