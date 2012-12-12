@@ -38,6 +38,18 @@ Install Isla
       Isla.Interpreter.interpret("write 'Hello, world.'");
     </script>
 
+## Language example
+
+    isla is a person
+    isla lunch is 'Jelly Tots'
+
+    drum is a toy
+
+    isla toys is a list
+    add drum to isla toys
+
+For more details on the language, see the language guide: https://github.com/maryrosecook/isla/wiki/Isla-language-guide
+
 ## Run the tests
 
     $ npm install --dev
