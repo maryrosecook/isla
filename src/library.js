@@ -33,7 +33,7 @@
 
       types: Isla.Utils.merge(extraTypes, {
         list: function() {
-          return new IslaList();
+          return new List();
         },
 
         generic: function() {
@@ -65,7 +65,7 @@
     }
   };
 
-  var IslaList = function() {
+  var List = function() {
     var data = [];
 
     this.add = multimethod()
@@ -127,5 +127,5 @@
     }
   }
 
-  exports.Library.IslaList = IslaList;
+  exports.Library.List = List;
 })(typeof exports === 'undefined' ? this.Isla : exports);

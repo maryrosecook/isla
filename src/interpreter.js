@@ -201,7 +201,7 @@
 
   var resolve = multimethod()
     .dispatch(function(thing) {
-      if(thing instanceof Isla.Library.IslaList) {
+      if(thing instanceof Isla.Library.List) {
         return "list";
       }
       else if(Isla.Utils.type(thing) === "Object") {
@@ -225,7 +225,7 @@
 
     .when("list", function(thing, env) {
       var items = thing.items();
-      var resolvedList = new Isla.Library.IslaList();
+      var resolvedList = new Isla.Library.List();
       for(var i = 0; i < items.length; i++) {
         resolvedList.add(resolve(items[i], env));
       }

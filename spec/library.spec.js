@@ -16,8 +16,8 @@ describe('library', function() {
       });
     });
 
-    describe('IslaList', function(){
-      it('should print elements of IslaList', function() {
+    describe('List', function(){
+      it('should print elements of List', function() {
         var code = "l is a list\nadd 'a' to l\nadd 'b' to l\nwrite l";
         var env = interpreter.interpret(code);
         expect(env.ret).toEqual("a list\n  a\n  b\n");
