@@ -55,10 +55,9 @@
 
     "literal",
     "  = all:string { return nnode('literal', [all]); }",
-    "  / all:integer { return nnode('literal', [all]); }",
 
     "identifier",
-    "  = !keyword all:identifier_char+ { return nnode('identifier', [all.join('')]); }",
+    "  = !keyword init:[a-zA-Z] rest:identifier_char* { return nnode('identifier', [init + rest.join('')]); }",
 
     "variable",
     "  = all:object { return nnode('variable', [all]); }",
@@ -85,9 +84,6 @@
     "to_from",
     "  = all:to { return nnode('to_from', ['to from']); }",
     "  / all:from { return nnode('to_from', ['to from']); }",
-
-    "integer",
-    "  = first:[1-9] rest:[0-9]* { return nnode('integer', [parseInt(first + rest.join(''))]); }",
 
     "string",
     "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')]); }",

@@ -24,24 +24,6 @@ var checkAst = multimethod()
 
 describe('parser', function() {
   describe('assignment to scalar', function(){
-    it('should assign a single digit number', function() {
-      checkAst(parser.parse("mary is 1"),
-               {root: [{block: [{expression:
-                                 [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
-                                    {is: ["is"]},
-                                    {value: [{literal: [{integer: [1]}]}]}]}]}]}]});
-    });
-
-    it('should assign a multi digit number', function() {
-      checkAst(parser.parse("mary is 22345"),
-               {root: [{block: [{expression:
-                                 [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
-                                    {is: ["is"]},
-                                    {value: [{literal: [{integer: [22345]}]}]}]}]}]}]});
-    });
-
     it('should assign an identifier', function() {
       checkAst(parser.parse("isla is age"),
                {root: [{block: [{expression:
@@ -70,18 +52,23 @@ describe('parser', function() {
                                     {value: [{literal: [{string: ["cool"]}]}]}]}]}]}]});
     });
 
+    it('should not parse assignment of int', function() {
+      expect(function(){
+        parser.parse("age is 1");
+      }).toThrow();
+    });
   });
 
   describe('assignment to object attribute', function(){
     it('should allow assignment', function() {
-      checkAst(parser.parse("isla age is 1"),
+      checkAst(parser.parse("isla age is '1'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{object:
                                                  [{identifier: ["isla"]},
                                                   {identifier: ["age"]}]}]},
                                     {is: ["is"]},
-                                    {value: [{literal: [{integer: [1]}]}]}]}]}]}]});
+                                    {value: [{literal: [{string: ['1']}]}]}]}]}]}]});
     });
   });
 
@@ -109,17 +96,17 @@ describe('parser', function() {
 
   describe('blocks', function(){
     it('should allow a two expression block', function() {
-      checkAst(parser.parse("isla is 1\nmary is 2"),
+      checkAst(parser.parse("isla is '1'\nmary is '2'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
                                     {is: ["is"]},
-                                    {value: [{literal: [{integer: [1]}]}]}]}]},
+                                    {value: [{literal: [{string: ['1']}]}]}]}]},
                                 {expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
                                     {is: ["is"]},
-                                    {value: [{literal: [{integer: [2]}]}]}]}]}]}]});
+                                    {value: [{literal: [{string: ['2']}]}]}]}]}]}]});
     });
 
     it('should allow a three expression block', function() {
@@ -144,6 +131,12 @@ describe('parser', function() {
   });
 
   describe('invocation', function() {
+    it('should not parse invocation with int param', function() {
+      expect(function(){
+        parser.parse("write 1");
+      }).toThrow();
+    });
+
     it('should allow invocation with scalar variable', function() {
       checkAst(parser.parse("write isla"),
                {root: [{block: [{expression:
@@ -190,6 +183,12 @@ describe('parser', function() {
                                     {is_a: ["is a"]},
                                     {identifier: ["list"]}]}]}]}]});
 
+    });
+
+    it('should not allow addition of int to list', function() {
+      expect(function(){
+        parser.parse("add 1 to list");
+      }).toThrow();
     });
 
     it('should allow addition of item to list', function() {
