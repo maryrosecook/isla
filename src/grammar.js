@@ -43,7 +43,7 @@
 
     "list_operation",
     "  = all:add { return nnode('list_operation', [all]); }",
-    "  / all:remove { return nnode('list_operation', [all]); }",
+    "  / all:take { return nnode('list_operation', [all]); }",
 
     "assignee",
     "  = all:object { return nnode('assignee', [all]); }",
@@ -79,8 +79,8 @@
     "add",
     "  = all:'add' { return nnode('add', [all]); }",
 
-    "remove",
-    "  = all:'remove' { return nnode('remove', [all]); }",
+    "take",
+    "  = all:'take' { return nnode('take', [all]); }",
 
     "to_from",
     "  = all:to { return nnode('to_from', ['to from']); }",
@@ -100,7 +100,7 @@
     "  = is !identifier_char",
     "  / is_a !identifier_char",
     "  / add !identifier_char",
-    "  / remove !identifier_char",
+    "  / take !identifier_char",
     "  / to !identifier_char",
     "  / from !identifier_char",
 

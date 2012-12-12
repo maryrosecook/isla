@@ -222,32 +222,26 @@ describe('interpreter', function() {
     });
 
     describe('removal', function() {
-      it('should be able to remove string from a list', function() {
-        var code = "items is a list\nadd 'sword' to items\nremove 'sword' from items";
+      it('should be able to take string from a list', function() {
+        var code = "items is a list\nadd 'sword' to items\ntake 'sword' from items";
         var env = interpreter.interpret(code);
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([]);
       });
 
-      it('should be able to remove ref from a list', function() {
-        var code = "items is a list\nmary is a person\nadd mary to items\nremove mary from items";
+      it('should be able to take ref from a list', function() {
+        var code = "items is a list\nmary is a person\nadd mary to items\ntake mary from items";
         var env = interpreter.interpret(code);
         expect(env.ctx.items.items()).toEqual([]);
       });
 
-      it('should do nothing if try to remove non-existent string from list', function() {
-        var code = "items is a list\nadd 'a' to items\nremove 'b' from items";
+      it('should do nothing if try to take non-existent string from list', function() {
+        var code = "items is a list\nadd 'a' to items\ntake 'b' from items";
         var env = interpreter.interpret(code);
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["a"]);
       });
 
-      it('should do nothing if try to remove non-existent int from list', function() {
-        var code = "items is a list\nadd 1 to items\nremove 2 from items";
-        var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([1]);
-      });
-
-      it('should do nothing if try to remove non-existent obj from list', function() {
-        var code = "mary is a person\nmary age is 1\nisla is a person\nitems is a list\nadd isla to items\nadd mary to items\nremove mary to items";
+      it('should do nothing if try to take non-existent obj from list', function() {
+        var code = "mary is a person\nmary age is '1'\nisla is a person\nitems is a list\nadd isla to items\nadd mary to items\ntake mary from items";
         var env = interpreter.interpret(code);
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([newObj("person")]);
       });
