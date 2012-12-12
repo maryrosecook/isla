@@ -21,9 +21,11 @@
   exports.Library.getInitialEnv = function(extraTypes, initialCtx) {
     var islaCtx = {
       write: function(env, param) {
-        var out = param;
+        var out;
         if(Isla.Utils.type(param) === "Object") {
-          out = JSON.stringify(param);
+          out = param.toString();
+        } else {
+          out = param;
         }
 
         return out;
@@ -35,7 +37,7 @@
         },
 
         generic: function() {
-          return {};
+          return new Generic();
         }
       })
     };
@@ -48,6 +50,19 @@
       ret: null,
       ctx: islaCtx
     };
+  };
+
+  var Generic = function() {
+    this.toString = function() {
+      var out = "a " + this._meta.type + "\n";
+      for (var i in this) {
+        if (Isla.Utils.type(this[i]) !== "Function" && i !== "_meta") {
+          out += "  " + i + " is " + this[i] + "\n";
+        }
+      }
+
+      return out;
+    }
   };
 
   var IslaList = function() {
@@ -71,7 +86,7 @@
         data.push(thing);
       })
 
-    this.remove = multimethod()
+    this.take = multimethod()
       .dispatch(function(thing) {
         return Isla.Utils.type(thing);
       })
@@ -97,6 +112,19 @@
     this.items = function() {
       return data;
     };
+
+    this.toString = function() {
+      if (this.items().length === 0) {
+        return "an empty list"
+      } else {
+        var out = "a list\n";
+        for (var i = 0; i < this.items().length; i++) {
+          out += "  " + this.items()[i] + "\n";
+        }
+
+        return out;
+      }
+    }
   }
 
   exports.Library.IslaList = IslaList;
