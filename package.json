@@ -3,7 +3,10 @@
   "description": "A programming language for children.",
   "author": "Mary Rose Cook <maryrosecook@maryrosecook.com>",
   "version": "0.1.0",
-  "scripts":{"test":"node_modules/jasmine-node/bin/jasmine-node spec/"},
+  "scripts": {
+    "test": "node_modules/jasmine-node/bin/jasmine-node spec/",
+    "prepublish": "node scripts/minifier.js"
+  },
   "dependencies": {
     "pegjs": "0.7.0",
     "multimethod": "0.1.0",
