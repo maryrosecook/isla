@@ -1,8 +1,8 @@
 {
   "name": "isla",
   "description": "A programming language for children.",
-  "author": "Mary Rose Cook <maryrosecook@maryrosecook.com>",
   "version": "0.1.0",
+  "author": "Mary Rose Cook <maryrosecook@maryrosecook.com> (http://maryrosecook.com/)",
   "scripts": {
     "test": "node_modules/jasmine-node/bin/jasmine-node spec/",
     "prepublish": "node scripts/minifier.js"
