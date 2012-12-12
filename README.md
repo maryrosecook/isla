@@ -1,10 +1,12 @@
 # Isla
 
-* by mary rose cook
+http://islalanguage.org
+
+* by Mary Rose Cook
 * http://maryrosecook.com
 * maryrosecook@maryrosecook.com
 
-A programming language for children.  An interpreter in JavaScript.
+A programming language for children.  The interpreter is written in JavaScript.  It runs in node or the browser.
 
 (Clojure compiler is at github.com/maryrosecook/islaclj)
 
