@@ -40,4 +40,5 @@ Install Isla
 
 ## Run the tests
 
+    $ npm install --dev
     $ npm test
