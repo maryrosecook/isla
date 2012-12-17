@@ -1,6 +1,7 @@
 # Isla
 
 http://islalanguage.org
+http://github.com/maryrosecook/isla
 
 * by Mary Rose Cook
 * http://maryrosecook.com
