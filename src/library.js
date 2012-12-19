@@ -53,11 +53,19 @@
   };
 
   var Generic = function() {
-    this.toString = function() {
+    this.toString = function(indent) {
+      if (!indent) {
+        indent = "  ";
+      }
+
       var out = "a " + this._meta.type + "\n";
       for (var i in this) {
         if (Isla.Utils.type(this[i]) !== "Function" && i !== "_meta") {
-          out += "  " + i + " is " + this[i] + "\n";
+          if(Isla.Utils.type(this[i]) === "Object") {
+            out += indent + i + " is " + this[i].toString(indent + "  ");
+          } else {
+            out += indent + i + " is '" + this[i] + "'\n";
+          }
         }
       }
 
@@ -123,13 +131,21 @@
       return data;
     };
 
-    this.toString = function() {
+    this.toString = function(indent) {
+      if (!indent) {
+        indent = "  ";
+      }
+
       if (this.items().length === 0) {
         return "an empty list"
       } else {
-        var out = "a list\n";
+        var out = "a list\n"
         for (var i = 0; i < this.items().length; i++) {
-          out += "  " + this.items()[i] + "\n";
+          if(Isla.Utils.type(this.items()[i]) === "Object") {
+            out += indent + this.items()[i].toString(indent + "  ");
+          } else {
+            out += indent + "'" + this.items()[i] + "'\n";
+          }
         }
 
         return out;
