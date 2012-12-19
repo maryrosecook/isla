@@ -100,8 +100,8 @@
       var fn = resolve({
         ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env)
       }, env);
-      var param = interpretAst(Isla.Parser.extract(ast, "invocation", 1),
-                               env).val;
+      var param = resolve(interpretAst(Isla.Parser.extract(ast, "invocation", 1),
+                                       env).val, env);
       var returnVal = fn(env, param);
       return nreturn(env.ctx, returnVal);
     })
