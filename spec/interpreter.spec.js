@@ -159,7 +159,7 @@ describe('interpreter', function() {
     });
 
     describe('addition', function() {
-      it('should be able to add to a list', function() {
+      it('should be able to add string to a list', function() {
         var env = interpreter.interpret("items is a list\nadd 'sword' to items");
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["sword"]);
       });
