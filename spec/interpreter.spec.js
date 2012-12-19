@@ -1,4 +1,5 @@
 var interpreter = require('../src/interpreter').Interpreter;
+var library = require('../src/library').Library;
 
 var newObj = function(type, data) {
   var obj = { _meta: { type: type } };
@@ -164,10 +165,63 @@ describe('interpreter', function() {
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["sword"]);
       });
 
-      it('should be able to add obj to a list', function() {
+      it('should be able to add ref to a list', function() {
         var code = "items is a list\nmary is a person\nadd mary to items";
         var env = interpreter.interpret(code);
         expect(env.ctx.items.items()).toEqual([{ ref: "mary" }]);
+      });
+
+      it('should not mistake two objects w/o refs as identical', function() {
+        // here because object equality check was a.ref === b.ref
+        // before you could add resolved objs to Lists
+        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(code);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+        list.add(interpreter.resolve(env.ctx.a, env));
+        expect(list.items().length).toEqual(2);
+      });
+
+      it('should be able to add resolved obj to a list', function() {
+        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.a.friend).toEqual({ ref: "b" });
+        var resolvedB = interpreter.resolve(env.ctx.a.friend, env);
+
+        var list = new library.List();
+        list.add(resolvedB);
+        expect(list.items()[0].age).toEqual('1');
+      });
+
+      it('should not be able to add same resolved obj to a list twice', function() {
+        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(code);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+
+        expect(list.items()[0].age).toEqual('1');
+        expect(list.items().length).toEqual(1);
+      });
+
+      it('should NOT be able to avoid adding resolved version of ref (or vice versa)', function() {
+        var c = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(c);
+
+        var list = new library.List();
+        list.add(env.ctx.a.friend);
+        expect(list.items().length).toEqual(1);
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(2);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+        list.add(env.ctx.a.friend);
+        expect(list.items().length).toEqual(2);
       });
 
       it('should be able to add dupe string to list', function() {
@@ -176,7 +230,7 @@ describe('interpreter', function() {
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["sword", "sword"]);
       });
 
-      it('should do nothing if add same obj twice', function() {
+      it('should do nothing if add same ref twice', function() {
         var code = "mary is a person\nitems is a list\nadd mary to items\nadd mary to items";
         var env = interpreter.interpret(code);
         expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([newObj("person")]);
@@ -200,6 +254,47 @@ describe('interpreter', function() {
         var code = "items is a list\nmary is a person\nadd mary to items\ntake mary from items";
         var env = interpreter.interpret(code);
         expect(env.ctx.items.items()).toEqual([]);
+      });
+
+      it('should not mistake two objects w/o refs as identical', function() {
+        // here because object equality check was a.ref === b.ref
+        // before you could add resolved objs to Lists
+        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(code);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+        list.take(interpreter.resolve(env.ctx.a, env));
+        expect(list.items().length).toEqual(1);
+      });
+
+      it('should be able to take resolved item from list', function() {
+        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(code);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+        list.take(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(0);
+      });
+
+      it('should NOT be able to take resolved version of ref from list (or vice versa)', function() {
+        var c = "a is a person\nb is a person\nb age is '1'\na friend is b";
+        var env = interpreter.interpret(c);
+
+        var list = new library.List();
+        list.add(env.ctx.a.friend);
+        expect(list.items().length).toEqual(1);
+        list.take(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+
+        var list = new library.List();
+        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        expect(list.items().length).toEqual(1);
+        list.take(env.ctx.a.friend);
+        expect(list.items().length).toEqual(1);
       });
 
       it('should do nothing if try to take non-existent string from list', function() {

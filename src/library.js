@@ -65,6 +65,12 @@
     }
   };
 
+  var objsEqual = function(a, b) {
+    // can't check for dupes where one resolved and other ref - haven't got env
+    return (a.ref === b.ref && a.ref) || // same ref
+      a === b; // same resolved obj
+  }
+
   var List = function() {
     var data = [];
 
@@ -73,12 +79,14 @@
         return Isla.Utils.type(thing);
       })
 
-      .when("Object", function(thing) { // note: will always be refs
+      // note: will always be refs unless part of list that is being resolved
+      .when("Object", function(thing) {
         for(var i = 0; i < data.length; i++) {
-          if(thing.ref === data[i].ref) {
+          if (objsEqual(thing, data[i])) {
             return;
           }
         }
+
         data.push(thing);
       })
 
@@ -91,9 +99,11 @@
         return Isla.Utils.type(thing);
       })
 
-      .when("Object", function(thing) { // note: will always be refs
+      // note: will always be refs unless part of list that is being resolved
+      .when("Object", function(thing) {
+        // can't reject dupes where one resolved other ref - haven't got env
         for(var i = 0; i < data.length; i++) {
-          if(thing.ref === data[i].ref) {
+          if (objsEqual(thing, data[i])) {
             data.splice(i, 1);
             break;
           }
