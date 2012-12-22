@@ -3,13 +3,22 @@
 
   var grammarArr = [
     "{",
-    "  var nnode = function(tag, content) {",
-    "    if(content !== undefined) {",
-    "      return { tag: tag, c: content };",
+    "  var nnode = function(tag, content, syntax, code) {",
+    "    var node = { tag: tag, c: content };",
+    "    if(syntax !== undefined) {",
+    "      node.syntax = syntax;",
     "    }",
-    "    else {",
-    "      return { tag: tag };",
+
+    "    if (code !== undefined) {",
+    "      node.code = code;",
     "    }",
+
+    "    return node;",
+    "  };",
+
+    "  var syn = function(obj, syntax) {",
+    "    obj.syntax = syntax;",
+    "    return obj;",
     "  };",
     "}",
 
@@ -54,7 +63,7 @@
     "  / all:variable { return nnode('value', [all]); }",
 
     "literal",
-    "  = all:string { return nnode('literal', [all]); }",
+    "  = all:string { return nnode('literal', [all], 'literal'); }",
 
     "identifier",
     "  = !keyword init:[a-zA-Z] rest:identifier_char* { return nnode('identifier', [init + rest.join('')]); }",
@@ -64,30 +73,30 @@
     "  / all:scalar { return nnode('variable', [all]); }",
 
     "scalar",
-    "  = all:identifier { return nnode('scalar', [all]); }",
+    "  = all:identifier { return nnode('scalar', [all], 'variable'); }",
 
     "object",
-    "  = id1:identifier _ id2:identifier { return nnode('object', [id1, id2]); }",
+    "  = id1:identifier _ id2:identifier { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')]); }",
 
     "is",
-    "  = all:'is' { return nnode('is', [all]); }",
+    "  = all:'is' { return nnode('is', [all], 'keyword'); }",
 
     "is_a",
-    "  = all:'is a' { return nnode('is_a', [all]); }",
+    "  = all:'is a' { return nnode('is_a', [all], 'keyword'); }",
 
     "add",
-    "  = all:'add' { return nnode('add', [all]); }",
+    "  = all:'add' { return nnode('add', [all], 'keyword'); }",
 
     "take",
-    "  = all:'take' { return nnode('take', [all]); }",
+    "  = all:'take' { return nnode('take', [all], 'keyword'); }",
 
     "to_from",
-    "  = all:to { return nnode('to_from', ['to from']); }",
-    "  / all:from { return nnode('to_from', ['to from']); }",
+    "  = all:to { return nnode('to_from', ['to from'], 'keyword'); }",
+    "  / all:from { return nnode('to_from', ['to from'], 'keyword'); }",
 
     "string",
-    "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')]); }",
-    "  / '\"' all:string_char_double* '\"' { return nnode('string', [all.join('')]); }",
+    "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')], undefined, \"'\" + all.join('') + \"'\"); }",
+    "  / '\"' all:string_char_double* '\"' { return nnode('string', [all.join('')], undefined, '\"' + all.join('') + '\"'); }",
 
     "nl",
     "  = all:[\\n]+ { return nnode('nl', all); }",

@@ -225,4 +225,185 @@ describe('parser', function() {
                                     {assignee: [{scalar: [{identifier: ["items"]}]}]}]}]}]}]})
     });
   });
+
+  describe('syntax annotation', function() {
+    var astExpression = function(code) {
+      return parser.extract(parser.parse(code),
+                            "root", 0, "block", 0, "expression", 0).c;
+    };
+
+    describe('keywords', function() {
+      describe('assignments', function() {
+        it('should annotate is in scalar assignment', function() {
+          expect(astExpression("x is 'y'")[1].syntax).toEqual("keyword");
+        });
+
+        it('should annotate is in object assignment', function() {
+          expect(astExpression("x y is 'z'")[1].syntax).toEqual("keyword");
+        });
+      });
+
+      describe('type instantiations', function() {
+        it('should annotate is a in scalar type instantiation', function() {
+          expect(astExpression("x is a y")[1].syntax).toEqual("keyword");
+        });
+
+        it('should annotate is a in an attribute type instantiation', function() {
+          expect(astExpression("x y is a z")[1].syntax).toEqual("keyword");
+        });
+      });
+
+      describe('list operations', function() {
+        it('should annotate add in a list operation', function() {
+          expect(astExpression("add x to y")[0].c[0].syntax).toEqual("keyword");
+        });
+
+        it('should annotate to in a list operation', function() {
+          expect(astExpression("add x to y")[2].syntax).toEqual("keyword");
+        });
+
+        it('should annotate take in a list operation', function() {
+          expect(astExpression("take x from y")[0].c[0].syntax).toEqual("keyword");
+        });
+
+        it('should annotate from in a list operation', function() {
+          expect(astExpression("take x from y")[2].syntax).toEqual("keyword");
+        });
+      });
+    });
+
+    describe('types', function() {
+      describe('type instantiations', function() {
+        it('should annotate in scalar type instantiation', function() {
+          expect(astExpression("x is a y")[2].syntax).toEqual("type");
+        });
+
+        it('should annotate in an attribute type instantiation', function() {
+          expect(astExpression("x y is a z")[2].syntax).toEqual("type");
+        });
+      });
+    });
+
+    describe('variables', function() {
+      describe('assignments', function() {
+        it('should annotate in scalar assignment', function() {
+          expect(parser.extract(astExpression("x is 'y'"),
+                                0, "assignee", 0).syntax).toEqual("variable");
+        });
+
+        it('should annotate in object assignment', function() {
+          expect(parser.extract(astExpression("x y is 'z'"),
+                                0, "assignee", 0, "object", 0).syntax)
+          .toEqual("variable");
+        });
+      });
+
+      describe('type instantiations', function() {
+        it('should annotate in scalar type instantiation', function() {
+          expect(parser.extract(astExpression("x is a y"),
+                                0, "assignee", 0).syntax).toEqual("variable");
+        });
+
+        it('should annotate in an attribute type instantiation', function() {
+          expect(parser.extract(astExpression("x y is a z"),
+                                0, "assignee", 0, "object", 0).syntax)
+          .toEqual("variable");
+        });
+      });
+
+      describe('list operations', function() {
+        it('should annotate item in a list operation', function() {
+          expect(parser.extract(astExpression("add x to y"),
+                                1, "value", 0, "variable", 0).syntax)
+          .toEqual("variable");
+        });
+
+        it('should annotate list in a list operation', function() {
+          expect(parser.extract(astExpression("add x to y"),
+                                3, "assignee", 0).syntax).toEqual("variable");
+        });
+      });
+
+      describe('invocations', function() {
+        it('should annotate scalar param', function() {
+          expect(parser.extract(astExpression("write x"),
+                                1, "value", 0, "variable", 0).syntax)
+          .toEqual("variable");
+        });
+
+        it('should annotate in object param', function() {
+          expect(parser.extract(astExpression("write x y"),
+                                1, "value", 0, "variable", 0, "object", 0).syntax)
+          .toEqual("variable");
+        });
+      });
+    });
+
+    describe('function identifiers', function() {
+      describe('invocations', function() {
+        it('should annotate in invocation', function() {
+          expect(parser.extract(astExpression("write x"),
+                                0).syntax).toEqual("function");
+        });
+
+      });
+    });
+
+    describe('literals', function() {
+      describe('assignments', function() {
+        it('should annotate in assignment', function() {
+          expect(parser.extract(astExpression("x is 'y'"),
+                                2, "value", 0).syntax).toEqual("literal");
+        });
+      });
+
+      describe('list operations', function() {
+        it('should annotate item in a list operation', function() {
+          expect(parser.extract(astExpression("add 'x' to y"),
+                                1, "value", 0).syntax).toEqual("literal");
+        });
+      });
+
+      describe('invocations', function() {
+        it('should annotate scalar param', function() {
+          expect(parser.extract(astExpression("write 'x'"),
+                                1, "value", 0).syntax).toEqual("literal");
+        });
+      });
+    });
+
+    describe('attributes', function() {
+      describe('assignments', function() {
+        it('should annotate in object assignment', function() {
+          expect(parser.extract(astExpression("x y is 'z'"),
+                                0, "assignee", 0, "object", 1).syntax)
+          .toEqual("attribute");
+        });
+      });
+
+      describe('type instantiations', function() {
+        it('should annotate in an attribute type instantiation', function() {
+          expect(parser.extract(astExpression("x y is a z"),
+                                0, "assignee", 0, "object", 1).syntax)
+          .toEqual("attribute");
+        });
+      });
+
+      describe('list operations', function() {
+        it('should annotate is a list op on a obj attribute', function() {
+          expect(parser.extract(astExpression("add x to y z"),
+                                3, "assignee", 0, "object", 1).syntax)
+          .toEqual("attribute");
+        });
+      });
+
+      describe('invocations', function() {
+        it('should annotate in object param', function() {
+          expect(parser.extract(astExpression("write x y"),
+                                1, "value", 0, "variable", 0, "object", 1).syntax)
+          .toEqual("attribute");
+        });
+      });
+    });
+  });
 });
