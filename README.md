@@ -56,4 +56,4 @@ Install Isla
 
 ## Clojure
 
-The Isla Clojure compiler is now at github.com/maryrosecook/islaclj
+The Clojure Isla compiler is now at github.com/maryrosecook/islaclj
