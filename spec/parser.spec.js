@@ -127,7 +127,29 @@ describe('parser', function() {
                                               [{scalar: [{identifier: ["name"]}]}]}]}]}]}
                                 ]}]});
     });
+  });
 
+  describe('whitespace', function() {
+    it('should allow whitespace at end of expressions', function() {
+      expect(parser.parse("x is y          ").tag).toEqual("root");
+      expect(parser.parse("write x         ").tag).toEqual("root");
+      expect(parser.parse("add x to y      ").tag).toEqual("root");
+      expect(parser.parse("x is a y        ").tag).toEqual("root");
+    });
+
+    it('should allow whitespace at beginning of expressions', function() {
+      expect(parser.parse("   x is y").tag).toEqual("root");
+      expect(parser.parse("   write x").tag).toEqual("root");
+      expect(parser.parse("   add x to y").tag).toEqual("root");
+      expect(parser.parse("   x is a y").tag).toEqual("root");
+    });
+
+    it('should allow whitespace at in middle of expressions', function() {
+      expect(parser.parse("x   is y").tag).toEqual("root");
+      expect(parser.parse("write    x").tag).toEqual("root");
+      expect(parser.parse("add x   to y").tag).toEqual("root");
+      expect(parser.parse("x is   a y").tag).toEqual("root");
+    });
   });
 
   describe('invocation', function() {

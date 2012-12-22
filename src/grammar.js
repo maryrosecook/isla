@@ -17,7 +17,7 @@
     "  = all:block { return nnode('root', [all]); }",
 
     "block",
-    "  = all:expression+ { return nnode('block', all); }",
+    "  = _* all:expression+ { return nnode('block', all); }",
 
     "expression",
     "  = all:type_assignment { return nnode('expression', [all]); }",
@@ -26,20 +26,20 @@
     "  / all:invocation { return nnode('expression', [all]); }",
 
     "type_assignment",
-    "  = a:assignee _ ia:is_a _ id:identifier nl",
-    "    { return nnode('type_assignment', [a, ia, id]); }",
+    "  = a:assignee _ ia:is_a _ id:identifier _* nl",
+    "    { return nnode('type_assignment', [a, ia, syn(id, 'type')]); }",
 
     "value_assignment",
-    "  = a:assignee _ i:is _ v:value nl",
+    "  = a:assignee _ i:is _ v:value _* nl",
     "    { return nnode('value_assignment', [a, i, v]); }",
 
     "list_assignment",
-    "  = lo:list_operation _ va:value _ tf:to_from _ as:assignee nl",
+    "  = lo:list_operation _ va:value _ tf:to_from _ as:assignee _* nl",
     "    { return nnode('list_assignment', [lo, va, tf, as]); }",
 
     "invocation",
-    "  = a:identifier _ v:value nl",
-    "    { return nnode('invocation', [a, v]); }",
+    "  = a:identifier _ v:value _* nl",
+    "    { return nnode('invocation', [syn(a, 'function'), v]); }",
 
     "list_operation",
     "  = all:add { return nnode('list_operation', [all]); }",
