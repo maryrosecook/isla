@@ -31,7 +31,7 @@
         return out;
       },
 
-      types: Isla.Utils.merge(extraTypes, {
+      _types: Isla.Utils.merge(extraTypes, {
         list: function() {
           return new List();
         },

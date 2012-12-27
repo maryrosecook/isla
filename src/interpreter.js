@@ -60,9 +60,9 @@
       var assignee = node[0];
       var typeIdentifier = interpretAst(node[2], env);
 
-      var typeFn = env.ctx.types[typeIdentifier];
+      var typeFn = env.ctx._types[typeIdentifier];
       if(typeFn === undefined) {
-        typeFn = env.ctx.types.generic;
+        typeFn = env.ctx._types.generic;
       }
 
       var value = instantiateType(typeFn, typeIdentifier);
