@@ -91,8 +91,8 @@
     "  = all:'take' { return nnode('take', [all], 'keyword'); }",
 
     "to_from",
-    "  = all:to { return nnode('to_from', ['to from'], 'keyword'); }",
-    "  / all:from { return nnode('to_from', ['to from'], 'keyword'); }",
+    "  = all:to { return nnode('to_from', ['to from'], 'keyword', 'to'); }",
+    "  / all:from { return nnode('to_from', ['to from'], 'keyword', 'from'); }",
 
     "string",
     "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')], undefined, \"'\" + all.join('') + \"'\"); }",
