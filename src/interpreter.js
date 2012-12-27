@@ -100,7 +100,8 @@
       var fn = resolve({
         ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env)
       }, env);
-      var param = resolve(interpretAst(Isla.Parser.extract(ast, "invocation", 1),
+      var param = resolve(interpretAst(Isla.Parser.extract(ast,
+                                                           "invocation", 1),
                                        env).val, env);
       var returnVal = fn(env, param);
       return nreturn(env.ctx, returnVal);
@@ -203,8 +204,7 @@
     .dispatch(function(thing) {
       if(thing instanceof Isla.Library.List) {
         return "list";
-      }
-      else if(Isla.Utils.type(thing) === "Object") {
+      } else if(Isla.Utils.type(thing) === "Object") {
         return thing.ref === undefined ? "object" : "ref";
       }
     })
