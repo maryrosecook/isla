@@ -78,10 +78,10 @@
                                                               env);
       if(currentListEval.val === undefined) { // no such list - show error
         var ref = currentListEval.ref;
-        throw Error("I do not know of a list called "
-                    + (Isla.Utils.type(currentListEval.ref) === "Array"
-                       ? ref[0] + " " + ref[1] : ref)
-                    + ".");
+        throw "I do not know of a list called "
+              + (Isla.Utils.type(currentListEval.ref) === "Array"
+                 ? ref[0] + " " + ref[1] : ref)
+              + ".";
       }
       else {
         var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
