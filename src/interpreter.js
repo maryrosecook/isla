@@ -202,7 +202,9 @@
 
   var resolve = multimethod()
     .dispatch(function(thing) {
-      if(thing._meta && thing._meta.type === "list") {
+      if (thing == null) {
+        return thing;
+      } else if(thing._meta && thing._meta.type === "list") {
         return "list";
       } else if(Isla.Utils.type(thing) === "Object") {
         return thing.ref === undefined ? "object" : "ref";

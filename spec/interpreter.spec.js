@@ -11,6 +11,16 @@ var newObj = function(type, data) {
 };
 
 describe('interpreter', function() {
+  describe('resolve', function(){
+    it('should cope with undefined param', function() {
+      expect(interpreter.resolve(undefined, library.getInitialEnv())).toBeUndefined();
+    });
+
+    it('should cope with null param', function() {
+      expect(interpreter.resolve(null, library.getInitialEnv())).toBeNull();
+    });
+  });
+
   describe('reference updating', function(){
     it('should produce right data if follow scalar ref made before obj updated', function() {
       var code = "isla is a person\nfriend is isla\nisla age is '1'";
