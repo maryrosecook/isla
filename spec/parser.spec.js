@@ -151,6 +151,29 @@ describe('parser', function() {
       expect(p.parse("x is   a y").tag).toEqual("root");
     });
   });
+
+  describe('index of node in source', function() {
+    var expr = function(ast) {
+      return p.extract(ast, "root", 0, "block", 0, "expression", 0);
+    };
+
+    it('should set index of 0 for beginning of expression', function() {
+      expect(expr(p.parse("x is y")).index).toEqual(0);
+    });
+
+    it('should set index of 0 for assignee at beginning of expression', function() {
+      var e = expr(p.parse("x is y"));
+      expect(p.extract(e, "value_assignment", 0).index).toEqual(0);
+    });
+
+    it('should set index of 2 for is in expression', function() {
+      var e = expr(p.parse("x is y"));
+      expect(p.extract(e, "value_assignment", 1).index).toEqual(2);
+    });
+
+    it('should set correct col when whitespace in code', function() {
+      var e = expr(p.parse("x           is y"));
+      expect(p.extract(e, "value_assignment", 1).index).toEqual(12);
     });
   });
 

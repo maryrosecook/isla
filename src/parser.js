@@ -18,7 +18,9 @@
     Isla = window.Isla;
   }
 
-  var pegParser = pegjs.buildParser(Isla.Grammar.peg);
+  var pegParser = pegjs.buildParser(Isla.Grammar.peg, {
+    trackLineAndColumn: true
+  });
 
   exports.Parser = {};
 

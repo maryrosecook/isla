@@ -3,8 +3,8 @@
 
   var grammarArr = [
     "{",
-    "  var nnode = function(tag, content, syntax, code) {",
-    "    var node = { tag: tag, c: content };",
+    "  var nnode = function(tag, content, column, syntax, code) {",
+    "    var node = { tag: tag, c: content, index: column - 1};",
     "    if(syntax !== undefined) {",
     "      node.syntax = syntax;",
     "    }",
@@ -23,83 +23,83 @@
     "}",
 
     "start",
-    "  = all:block { return nnode('root', [all]); }",
+    "  = all:block { return nnode('root', [all], column); }",
 
     "block",
-    "  = _* all:expression+ { return nnode('block', all); }",
+    "  = _* all:expression+ { return nnode('block', all, column); }",
 
     "expression",
-    "  = all:type_assignment { return nnode('expression', [all]); }",
-    "  / all:value_assignment { return nnode('expression', [all]); }",
-    "  / all:list_assignment { return nnode('expression', [all]); }",
-    "  / all:invocation { return nnode('expression', [all]); }",
+    "  = all:type_assignment { return nnode('expression', [all], column); }",
+    "  / all:value_assignment { return nnode('expression', [all], column); }",
+    "  / all:list_assignment { return nnode('expression', [all], column); }",
+    "  / all:invocation { return nnode('expression', [all], column); }",
 
     "type_assignment",
     "  = a:assignee _ ia:is_a _ id:identifier _* nl",
-    "    { return nnode('type_assignment', [a, ia, syn(id, 'type')]); }",
+    "    { return nnode('type_assignment', [a, ia, syn(id, 'type')], column); }",
 
     "value_assignment",
     "  = a:assignee _ i:is _ v:value _* nl",
-    "    { return nnode('value_assignment', [a, i, v]); }",
+    "    { return nnode('value_assignment', [a, i, v], column); }",
 
     "list_assignment",
     "  = lo:list_operation _ va:value _ tf:to_from _ as:assignee _* nl",
-    "    { return nnode('list_assignment', [lo, va, tf, as]); }",
+    "    { return nnode('list_assignment', [lo, va, tf, as], column); }",
 
     "invocation",
     "  = a:identifier _ v:value _* nl",
-    "    { return nnode('invocation', [syn(a, 'function'), v]); }",
+    "    { return nnode('invocation', [syn(a, 'function'), v], column); }",
 
     "list_operation",
-    "  = all:add { return nnode('list_operation', [all]); }",
-    "  / all:take { return nnode('list_operation', [all]); }",
+    "  = all:add { return nnode('list_operation', [all], column); }",
+    "  / all:take { return nnode('list_operation', [all], column); }",
 
     "assignee",
-    "  = all:object { return nnode('assignee', [all]); }",
-    "  / all:scalar { return nnode('assignee', [all]); }",
+    "  = all:object { return nnode('assignee', [all], column); }",
+    "  / all:scalar { return nnode('assignee', [all], column); }",
 
     "value",
-    "  = all:literal { return nnode('value', [all]); }",
-    "  / all:variable { return nnode('value', [all]); }",
+    "  = all:literal { return nnode('value', [all], column); }",
+    "  / all:variable { return nnode('value', [all], column); }",
 
     "literal",
-    "  = all:string { return nnode('literal', [all], 'literal'); }",
+    "  = all:string { return nnode('literal', [all], column, 'literal'); }",
 
     "identifier",
-    "  = !keyword init:[a-zA-Z] rest:identifier_char* { return nnode('identifier', [init + rest.join('')]); }",
+    "  = !keyword init:[a-zA-Z] rest:identifier_char* { return nnode('identifier', [init + rest.join('')], column); }",
 
     "variable",
-    "  = all:object { return nnode('variable', [all]); }",
-    "  / all:scalar { return nnode('variable', [all]); }",
+    "  = all:object { return nnode('variable', [all], column); }",
+    "  / all:scalar { return nnode('variable', [all], column); }",
 
     "scalar",
-    "  = all:identifier { return nnode('scalar', [all], 'variable'); }",
+    "  = all:identifier { return nnode('scalar', [all], column, 'variable'); }",
 
     "object",
-    "  = id1:identifier _ id2:identifier { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')]); }",
+    "  = id1:identifier _ id2:identifier { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')], column); }",
 
     "is",
-    "  = all:'is' { return nnode('is', [all], 'keyword'); }",
+    "  = all:'is' { return nnode('is', [all], column, 'keyword'); }",
 
     "is_a",
-    "  = all:'is a' { return nnode('is_a', [all], 'keyword'); }",
+    "  = all:'is a' { return nnode('is_a', [all], column, 'keyword'); }",
 
     "add",
-    "  = all:'add' { return nnode('add', [all], 'keyword'); }",
+    "  = all:'add' { return nnode('add', [all], column, 'keyword'); }",
 
     "take",
-    "  = all:'take' { return nnode('take', [all], 'keyword'); }",
+    "  = all:'take' { return nnode('take', [all], column, 'keyword'); }",
 
     "to_from",
-    "  = all:to { return nnode('to_from', ['to from'], 'keyword', 'to'); }",
-    "  / all:from { return nnode('to_from', ['to from'], 'keyword', 'from'); }",
+    "  = all:to { return nnode('to_from', ['to from'], column, 'keyword', 'to'); }",
+    "  / all:from { return nnode('to_from', ['to from'], column, 'keyword', 'from'); }",
 
     "string",
-    "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')], undefined, \"'\" + all.join('') + \"'\"); }",
-    "  / '\"' all:string_char_double* '\"' { return nnode('string', [all.join('')], undefined, '\"' + all.join('') + '\"'); }",
+    "  = \"'\" all:string_char_single* \"'\" { return nnode('string', [all.join('')], column, undefined, \"'\" + all.join('') + \"'\"); }",
+    "  / '\"' all:string_char_double* '\"' { return nnode('string', [all.join('')], column, undefined, '\"' + all.join('') + '\"'); }",
 
     "nl",
-    "  = all:[\\n]+ { return nnode('nl', all); }",
+    "  = all:[\\n]+ { return nnode('nl', all, column); }",
 
     "keyword",
     "  = is !identifier_char",
