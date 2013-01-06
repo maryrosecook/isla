@@ -1,7 +1,7 @@
 var _ = require('Underscore');
 var multimethod = require('multimethod');
 
-var parser = require('../src/parser').Parser;
+var p = require('../src/parser').Parser;
 var utils = require("../src/utils").Utils;
 
 var checkAst = multimethod()
@@ -25,7 +25,7 @@ var checkAst = multimethod()
 describe('parser', function() {
   describe('assignment to scalar', function(){
     it('should assign an identifier', function() {
-      checkAst(parser.parse("isla is age"),
+      checkAst(p.parse("isla is age"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -35,7 +35,7 @@ describe('parser', function() {
     });
 
     it('should assign a string in single quotes', function() {
-      checkAst(parser.parse("isla is 'cool'"),
+      checkAst(p.parse("isla is 'cool'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -44,7 +44,7 @@ describe('parser', function() {
     });
 
     it('should assign a string in double quotes', function() {
-      checkAst(parser.parse("isla is \"cool\""),
+      checkAst(p.parse("isla is \"cool\""),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -54,14 +54,14 @@ describe('parser', function() {
 
     it('should not parse assignment of int', function() {
       expect(function(){
-        parser.parse("age is 1");
+        p.parse("age is 1");
       }).toThrow();
     });
   });
 
   describe('assignment to object attribute', function(){
     it('should allow assignment', function() {
-      checkAst(parser.parse("isla age is '1'"),
+      checkAst(p.parse("isla age is '1'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{object:
@@ -74,7 +74,7 @@ describe('parser', function() {
 
   describe('type assignment', function(){
     it('should allow assignment to scalar', function() {
-      checkAst(parser.parse("mary is a girl"),
+      checkAst(p.parse("mary is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
@@ -83,7 +83,7 @@ describe('parser', function() {
     });
 
     it('should allow assignment to an object attribute', function() {
-      checkAst(parser.parse("mary friend is a girl"),
+      checkAst(p.parse("mary friend is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{object:
@@ -96,7 +96,7 @@ describe('parser', function() {
 
   describe('blocks', function(){
     it('should allow a two expression block', function() {
-      checkAst(parser.parse("isla is '1'\nmary is '2'"),
+      checkAst(p.parse("isla is '1'\nmary is '2'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
@@ -110,7 +110,7 @@ describe('parser', function() {
     });
 
     it('should allow a three expression block', function() {
-      checkAst(parser.parse("name is 'Isla'\nwrite 'la'\nwrite name"),
+      checkAst(p.parse("name is 'Isla'\nwrite 'la'\nwrite name"),
                {root: [{block: [{expression:
                                  [{value_assignment:
                                    [{assignee: [{scalar: [{identifier: ["name"]}]}]},
@@ -131,36 +131,38 @@ describe('parser', function() {
 
   describe('whitespace', function() {
     it('should allow whitespace at end of expressions', function() {
-      expect(parser.parse("x is y          ").tag).toEqual("root");
-      expect(parser.parse("write x         ").tag).toEqual("root");
-      expect(parser.parse("add x to y      ").tag).toEqual("root");
-      expect(parser.parse("x is a y        ").tag).toEqual("root");
+      expect(p.parse("x is y          ").tag).toEqual("root");
+      expect(p.parse("write x         ").tag).toEqual("root");
+      expect(p.parse("add x to y      ").tag).toEqual("root");
+      expect(p.parse("x is a y        ").tag).toEqual("root");
     });
 
     it('should allow whitespace at beginning of expressions', function() {
-      expect(parser.parse("   x is y").tag).toEqual("root");
-      expect(parser.parse("   write x").tag).toEqual("root");
-      expect(parser.parse("   add x to y").tag).toEqual("root");
-      expect(parser.parse("   x is a y").tag).toEqual("root");
+      expect(p.parse("   x is y").tag).toEqual("root");
+      expect(p.parse("   write x").tag).toEqual("root");
+      expect(p.parse("   add x to y").tag).toEqual("root");
+      expect(p.parse("   x is a y").tag).toEqual("root");
     });
 
     it('should allow whitespace at in middle of expressions', function() {
-      expect(parser.parse("x   is y").tag).toEqual("root");
-      expect(parser.parse("write    x").tag).toEqual("root");
-      expect(parser.parse("add x   to y").tag).toEqual("root");
-      expect(parser.parse("x is   a y").tag).toEqual("root");
+      expect(p.parse("x   is y").tag).toEqual("root");
+      expect(p.parse("write    x").tag).toEqual("root");
+      expect(p.parse("add x   to y").tag).toEqual("root");
+      expect(p.parse("x is   a y").tag).toEqual("root");
+    });
+  });
     });
   });
 
   describe('invocation', function() {
     it('should not parse invocation with int param', function() {
       expect(function(){
-        parser.parse("write 1");
+        p.parse("write 1");
       }).toThrow();
     });
 
     it('should allow invocation with scalar variable', function() {
-      checkAst(parser.parse("write isla"),
+      checkAst(p.parse("write isla"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -169,7 +171,7 @@ describe('parser', function() {
     });
 
     it('should allow invocation with scalar literal', function() {
-      checkAst(parser.parse("write 'isla'"),
+      checkAst(p.parse("write 'isla'"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -177,7 +179,7 @@ describe('parser', function() {
     });
 
     it('should allow invocation with object attribute', function() {
-      checkAst(parser.parse("write isla age"),
+      checkAst(p.parse("write isla age"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -187,7 +189,7 @@ describe('parser', function() {
     });
 
     it('should not show string regression', function() {
-      checkAst(parser.parse("write 'My name Isla'"),
+      checkAst(p.parse("write 'My name Isla'"),
                {root: [{block: [{expression:
                                  [{invocation:
                                    [{identifier: ["write"]},
@@ -198,7 +200,7 @@ describe('parser', function() {
 
   describe('lists', function() {
     it('should allow list instantiation', function() {
-      checkAst(parser.parse("items is a list"),
+      checkAst(p.parse("items is a list"),
                {root: [{block: [{expression:
                                  [{type_assignment:
                                    [{assignee: [{scalar: [{identifier: ["items"]}]}]},
@@ -209,12 +211,12 @@ describe('parser', function() {
 
     it('should not allow addition of int to list', function() {
       expect(function(){
-        parser.parse("add 1 to list");
+        p.parse("add 1 to list");
       }).toThrow();
     });
 
     it('should allow addition of item to list', function() {
-      checkAst(parser.parse("add sword to items"),
+      checkAst(p.parse("add sword to items"),
                {root: [{block: [{expression:
                                  [{list_assignment:
                                    [{list_operation: [{add: ["add"]}]},
@@ -228,7 +230,7 @@ describe('parser', function() {
 
   describe('syntax annotation', function() {
     var astExpression = function(code) {
-      return parser.extract(parser.parse(code),
+      return p.extract(p.parse(code),
                             "root", 0, "block", 0, "expression", 0).c;
     };
 
@@ -287,12 +289,12 @@ describe('parser', function() {
     describe('variables', function() {
       describe('assignments', function() {
         it('should annotate in scalar assignment', function() {
-          expect(parser.extract(astExpression("x is 'y'"),
+          expect(p.extract(astExpression("x is 'y'"),
                                 0, "assignee", 0).syntax).toEqual("variable");
         });
 
         it('should annotate in object assignment', function() {
-          expect(parser.extract(astExpression("x y is 'z'"),
+          expect(p.extract(astExpression("x y is 'z'"),
                                 0, "assignee", 0, "object", 0).syntax)
           .toEqual("variable");
         });
@@ -300,12 +302,12 @@ describe('parser', function() {
 
       describe('type instantiations', function() {
         it('should annotate in scalar type instantiation', function() {
-          expect(parser.extract(astExpression("x is a y"),
+          expect(p.extract(astExpression("x is a y"),
                                 0, "assignee", 0).syntax).toEqual("variable");
         });
 
         it('should annotate in an attribute type instantiation', function() {
-          expect(parser.extract(astExpression("x y is a z"),
+          expect(p.extract(astExpression("x y is a z"),
                                 0, "assignee", 0, "object", 0).syntax)
           .toEqual("variable");
         });
@@ -313,26 +315,26 @@ describe('parser', function() {
 
       describe('list operations', function() {
         it('should annotate item in a list operation', function() {
-          expect(parser.extract(astExpression("add x to y"),
+          expect(p.extract(astExpression("add x to y"),
                                 1, "value", 0, "variable", 0).syntax)
           .toEqual("variable");
         });
 
         it('should annotate list in a list operation', function() {
-          expect(parser.extract(astExpression("add x to y"),
+          expect(p.extract(astExpression("add x to y"),
                                 3, "assignee", 0).syntax).toEqual("variable");
         });
       });
 
       describe('invocations', function() {
         it('should annotate scalar param', function() {
-          expect(parser.extract(astExpression("write x"),
+          expect(p.extract(astExpression("write x"),
                                 1, "value", 0, "variable", 0).syntax)
           .toEqual("variable");
         });
 
         it('should annotate in object param', function() {
-          expect(parser.extract(astExpression("write x y"),
+          expect(p.extract(astExpression("write x y"),
                                 1, "value", 0, "variable", 0, "object", 0).syntax)
           .toEqual("variable");
         });
@@ -342,7 +344,7 @@ describe('parser', function() {
     describe('function identifiers', function() {
       describe('invocations', function() {
         it('should annotate in invocation', function() {
-          expect(parser.extract(astExpression("write x"),
+          expect(p.extract(astExpression("write x"),
                                 0).syntax).toEqual("function");
         });
 
@@ -352,21 +354,21 @@ describe('parser', function() {
     describe('literals', function() {
       describe('assignments', function() {
         it('should annotate in assignment', function() {
-          expect(parser.extract(astExpression("x is 'y'"),
+          expect(p.extract(astExpression("x is 'y'"),
                                 2, "value", 0).syntax).toEqual("literal");
         });
       });
 
       describe('list operations', function() {
         it('should annotate item in a list operation', function() {
-          expect(parser.extract(astExpression("add 'x' to y"),
+          expect(p.extract(astExpression("add 'x' to y"),
                                 1, "value", 0).syntax).toEqual("literal");
         });
       });
 
       describe('invocations', function() {
         it('should annotate scalar param', function() {
-          expect(parser.extract(astExpression("write 'x'"),
+          expect(p.extract(astExpression("write 'x'"),
                                 1, "value", 0).syntax).toEqual("literal");
         });
       });
@@ -375,7 +377,7 @@ describe('parser', function() {
     describe('attributes', function() {
       describe('assignments', function() {
         it('should annotate in object assignment', function() {
-          expect(parser.extract(astExpression("x y is 'z'"),
+          expect(p.extract(astExpression("x y is 'z'"),
                                 0, "assignee", 0, "object", 1).syntax)
           .toEqual("attribute");
         });
@@ -383,7 +385,7 @@ describe('parser', function() {
 
       describe('type instantiations', function() {
         it('should annotate in an attribute type instantiation', function() {
-          expect(parser.extract(astExpression("x y is a z"),
+          expect(p.extract(astExpression("x y is a z"),
                                 0, "assignee", 0, "object", 1).syntax)
           .toEqual("attribute");
         });
@@ -391,7 +393,7 @@ describe('parser', function() {
 
       describe('list operations', function() {
         it('should annotate is a list op on a obj attribute', function() {
-          expect(parser.extract(astExpression("add x to y z"),
+          expect(p.extract(astExpression("add x to y z"),
                                 3, "assignee", 0, "object", 1).syntax)
           .toEqual("attribute");
         });
@@ -399,7 +401,7 @@ describe('parser', function() {
 
       describe('invocations', function() {
         it('should annotate in object param', function() {
-          expect(parser.extract(astExpression("write x y"),
+          expect(p.extract(astExpression("write x y"),
                                 1, "value", 0, "variable", 0, "object", 1).syntax)
           .toEqual("attribute");
         });
