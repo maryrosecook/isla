@@ -279,4 +279,5 @@
   }
 
   exports.Interpreter.resolve = resolve;
+  exports.Interpreter.evaluateValue = evaluateValue;
 })(typeof exports === 'undefined' ? this.Isla : exports);
