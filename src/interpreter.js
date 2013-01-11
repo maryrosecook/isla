@@ -99,7 +99,7 @@
     .when("invocation", function(ast, env) {
       var fn = resolve({
         ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env)
-      }, env);
+      }, env).fn;
       var param = resolve(interpretAst(Isla.Parser.extract(ast,
                                                            "invocation", 1),
                                        env).val, env);

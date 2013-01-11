@@ -20,15 +20,21 @@
 
   exports.Library.getInitialEnv = function(extraTypes, initialCtx) {
     var islaCtx = {
-      write: function(env, param) {
-        var out;
-        if(Isla.Utils.type(param) === "Object") {
-          out = param.toString();
-        } else {
-          out = param;
-        }
+      write: {
+        fn: function(env, param) {
+          var out;
+          if(Isla.Utils.type(param) === "Object") {
+            out = param.toString();
+          } else {
+            out = param;
+          }
 
-        return out;
+          return out;
+        },
+
+        description: function(p) {
+          return "Writes out " + p + ".";
+        }
       },
 
       _types: Isla.Utils.merge(extraTypes, {
