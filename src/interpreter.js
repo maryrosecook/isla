@@ -280,4 +280,5 @@
 
   exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
+  exports.Interpreter.interpretAst = interpretAst;
 })(typeof exports === 'undefined' ? this.Isla : exports);
