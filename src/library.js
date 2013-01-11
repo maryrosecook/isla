@@ -22,14 +22,11 @@
     var islaCtx = {
       write: {
         fn: function(env, param) {
-          var out;
           if(Isla.Utils.type(param) === "Object") {
-            out = param.toString();
+            return param.toString();
           } else {
-            out = param;
+            return param;
           }
-
-          return out;
         },
 
         description: function(p) {
