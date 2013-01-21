@@ -25,7 +25,7 @@
           if(Isla.Utils.type(param) === "Object") {
             return param.toString();
           } else {
-            return param;
+            return param + "\n";
           }
         },
 
