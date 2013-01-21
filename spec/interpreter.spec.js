@@ -96,12 +96,12 @@ describe('interpreter', function() {
   describe('invocation', function(){
     it('should return result of invocation', function() {
       var env = interpreter.interpret("write '2'");
-      expect(env.ret).toEqual('2');
+      expect(env.ret).toEqual('2\n');
     });
 
     it('should return result of last invocation', function() {
       var env = interpreter.interpret("write '2'\nwrite '3'");
-      expect(env.ret).toEqual('3');
+      expect(env.ret).toEqual('3\n');
     });
 
     it('should return null if expression does not return anything', function() {
@@ -111,13 +111,13 @@ describe('interpreter', function() {
 
     it('should accept scalar as param', function() {
       var env = interpreter.interpret("age is '1'\nwrite age");
-      expect(env.ret).toEqual('1');
+      expect(env.ret).toEqual('1\n');
     });
 
     it('should accept object attribute as param', function() {
       var code = "mary is a person\nmary age is '2'\nwrite mary age";
       var env = interpreter.interpret(code);
-      expect(env.ret).toEqual('2');
+      expect(env.ret).toEqual('2\n');
     });
   });
 
