@@ -66,7 +66,7 @@
     "  = all:string { return nnode('literal', [all], column, 'literal'); }",
 
     "identifier",
-    "  = !keyword init:[a-zA-Z] rest:identifier_char* { return nnode('identifier', [init + rest.join('')], column); }",
+    "  = !keyword init:init_identifier_char rest:identifier_char* { return nnode('identifier', [init + rest.join('')], column); }",
 
     "variable",
     "  = all:object { return nnode('variable', [all], column); }",
@@ -112,7 +112,8 @@
     "to = 'to'",
     "from = 'from'",
     "_ = [ \\t\\r]+",
-    "identifier_char = [a-z0-9]",
+    "identifier_char = [a-zA-Z0-9_]",
+    "init_identifier_char = [a-zA-Z_]",
     "string_char_double = [A-Za-z0-9., ']",
     "string_char_single = [A-Za-z0-9., \"]"
   ];

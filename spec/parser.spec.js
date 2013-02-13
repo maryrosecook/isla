@@ -397,6 +397,14 @@ describe('parser', function() {
       });
     });
 
+    describe('identifier', function() {
+      it('should allow underscores in identifiers', function() {
+        expect(p.extract(astExpression("x _y is 'z'"),
+                              0, "assignee", 0, "object", 1).syntax)
+        .toEqual("attribute");
+      });
+    });
+
     describe('attributes', function() {
       describe('assignments', function() {
         it('should annotate in object assignment', function() {
