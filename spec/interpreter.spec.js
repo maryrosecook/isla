@@ -59,6 +59,50 @@ describe('interpreter', function() {
       });
     });
 
+    describe('non-existent', function(){
+      it('should complain about non-existent top level assignee obj', function() {
+        expect(function() {
+          interpreter.interpret("a b is '1'");
+        }).toThrow("I have not heard of a.");
+      });
+
+      it('should complain about non-existent obj that is attr of obj', function() {
+        expect(function() {
+          interpreter.interpret("a is a thing\na b c is '1'");
+        }).toThrow("I have not heard of a b.");
+      });
+
+      it('should complain about non-existent assigned top level thing', function() {
+        expect(function() {
+          interpreter.interpret("a is b");
+        }).toThrow("I have not heard of b.");
+      });
+
+      it('should complain about attr of obj attr of non-existent assigned obj', function() {
+        expect(function() {
+          interpreter.interpret("a is b c d");
+        }).toThrow("I have not heard of b.");
+      });
+    });
+
+
+    describe('nested attributes', function(){
+      it('should be able to assign scalar to nested attr', function() {
+        var code = "x is a thing\nx y is a thing\nx y z is '1'";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.x.y.z).toEqual('1');
+      });
+    });
+
+
+    describe('nested attributes', function(){
+      it('should be able to assign nested attr to scalar', function() {
+        var code = "x is a thing\nx y is a thing\nx y z is '1'\na is x y z";
+        var env = interpreter.interpret(code);
+        expect(interpreter.resolve(env.ctx.a, env)).toEqual('1');
+      });
+    });
+
     describe('scalar assigned to object attribute', function(){
       it('should use ref when obj assigned', function() {
         var code = "x is a person\ny is a person\ny age is '1'\nx friend is y\ny age is '2'";
@@ -159,13 +203,7 @@ describe('interpreter', function() {
       it('should get error if try and use non-existent list', function() {
         expect(function(){
           interpreter.interpret("add 'sword' to items");
-        }).toThrow("I do not know of a list called items.");
-      });
-
-      it('should get error if try and use non-existent list', function() {
-        expect(function(){
-          interpreter.interpret("add '1' to isla items");
-        }).toThrow("I do not know of a list called isla items.");
+        }).toThrow("I have not heard of items.");
       });
     });
 
@@ -180,6 +218,27 @@ describe('interpreter', function() {
         var env = interpreter.interpret(code);
         expect(env.ctx.items.items()).toEqual([{ ref: "mary" }]);
       });
+
+      it('should be able to add scalar attr of obj that is attr of obj to a list', function() {
+        var code = "i is a list\na is a thing\na b is a thing\na b c is '1'\nadd a b c to i";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.i.items()).toEqual(['1']);
+      });
+
+
+      it('should be able to add obj attr of obj that is attr of obj to a list', function() {
+        var code = "i is a list\na is a thing\na b is a thing\na b c is a thing\nadd a b c to i";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.i.items()).toEqual([{ ref: ['a', 'b', 'c']}]);
+      });
+
+
+      it('should be able to add to list that is attr of obj that is attr of obj', function() {
+        var code = "a is a thing\na b is a thing\na b c is a list\nadd '1' to a b c";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.a.b.c.items()).toEqual(['1']);
+      });
+
 
       it('should not mistake two objects w/o refs as identical', function() {
         // here because object equality check was a.ref === b.ref

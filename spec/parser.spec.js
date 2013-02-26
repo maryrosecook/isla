@@ -70,6 +70,34 @@ describe('parser', function() {
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ['1']}]}]}]}]}]}]});
     });
+
+    it('should allow assignment to several attrs deep', function() {
+      checkAst(p.parse("isla jacket sleeve color is 'red'"),
+               {root: [{block: [{expression:
+                                 [{value_assignment:
+                                   [{assignee: [{object:
+                                                 [{identifier: ["isla"]},
+                                                  {identifier: ["jacket"]},
+                                                  {identifier: ["sleeve"]},
+                                                  {identifier: ["color"]}]}]},
+                                    {is: ["is"]},
+                                    {value: [{literal: [{string: ['red']}]}]}]}]}]}]});
+    });
+  });
+
+  describe('assignment of nested object attribute', function(){
+    it('should allow assignment', function() {
+      checkAst(p.parse("color is isla jacket sleeve color"),
+               {root: [{block: [{expression:
+                                 [{value_assignment:
+                                   [{assignee: [{scalar: [{identifier: ["color"]}]}]},
+                                    {is: ["is"]},
+                                    {value: [{variable:
+                                              [{object: [{identifier: ["isla"]},
+                                                         {identifier: ["jacket"]},
+                                                         {identifier: ["sleeve"]},
+                                                         {identifier: ["color"]}]}]}]}]}]}]}]});
+    });
   });
 
   describe('type assignment', function(){
@@ -89,6 +117,18 @@ describe('parser', function() {
                                    [{assignee: [{object:
                                                  [{identifier: ["mary"]},
                                                   {identifier: ["friend"]}]}]},
+                                    {is_a: ["is a"]},
+                                    {identifier: ["girl"]}]}]}]}]});
+    });
+
+    it('should allow assignment to an nested object attribute', function() {
+      checkAst(p.parse("mary friend niece is a girl"),
+               {root: [{block: [{expression:
+                                 [{type_assignment:
+                                   [{assignee: [{object:
+                                                 [{identifier: ["mary"]},
+                                                  {identifier: ["friend"]},
+                                                  {identifier: ["niece"]}]}]},
                                     {is_a: ["is a"]},
                                     {identifier: ["girl"]}]}]}]}]});
     });
@@ -209,6 +249,18 @@ describe('parser', function() {
                                     {value: [{variable:
                                               [{object: [{identifier: ["isla"]},
                                                          {identifier: ["age"]}]}]}]}]}]}]}]});
+    });
+
+    it('should allow invocation with nested object attribute', function() {
+      checkAst(p.parse("write isla jacket sleeve color"),
+               {root: [{block: [{expression:
+                                 [{invocation:
+                                   [{identifier: ["write"]},
+                                    {value: [{variable:
+                                              [{object: [{identifier: ["isla"]},
+                                                         {identifier: ["jacket"]},
+                                                         {identifier: ["sleeve"]},
+                                                         {identifier: ["color"]}]}]}]}]}]}]}]});
     });
 
     it('should not show string regression', function() {

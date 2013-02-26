@@ -76,7 +76,10 @@
     "  = all:identifier { return nnode('scalar', [all], column, 'variable'); }",
 
     "object",
-    "  = id1:identifier _ id2:identifier { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')], column); }",
+    "  = id1:identifier _ id2:identifier rest:object_rest* { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')].concat(rest), column); }",
+
+    "object_rest",
+    "  = _ id:identifier { return syn(id, 'attribute'); }",
 
     "is",
     "  = all:'is' { return nnode('is', [all], column, 'keyword'); }",

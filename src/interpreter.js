@@ -51,6 +51,7 @@
       var assignee = node[0];
       var valueNode = interpretAst(node[2], env);
       var value = assignmentValue(valueNode);
+
       var env = assign(env, assignee, value);
       return nreturn(env.ctx);
     })
@@ -76,24 +77,15 @@
       var currentListEval = evaluateValue(Isla.Parser.extract(assignee,
                                                               "assignee", 0),
                                                               env);
-      if(currentListEval.val === undefined) { // no such list - show error
-        var ref = currentListEval.ref;
-        throw "I do not know of a list called "
-              + (Isla.Utils.type(currentListEval.ref) === "Array"
-                 ? ref[0] + " " + ref[1] : ref)
-              + ".";
-      }
-      else {
-        var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
-        var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
-        var item = assignmentValue(itemEval);
+      var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
+      var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
+      var item = assignmentValue(itemEval);
 
-        var list = currentListEval.val;
-        list[operation](item);
+      var list = currentListEval.val;
+      list[operation](item);
 
-        var env = assign(env, assignee, currentListEval.val);
-        return nreturn(env.ctx);
-      }
+      var env = assign(env, assignee, currentListEval.val);
+      return nreturn(env.ctx);
     })
 
     .when("invocation", function(ast, env) {
@@ -143,21 +135,51 @@
 
     .when("scalar", function(node, env) {
       var identifier = interpretAst(node.c[0], env);
-      return { ref: identifier, val: env.ctx[identifier] };
+      var val = env.ctx[identifier];
+      if (val === undefined) {
+        nonExistentError([identifier]);
+      } else {
+        return { ref: identifier, val: val };
+      }
     })
 
     .when("object", function(node, env) {
-      // make more specific
-      var objId = node.c[0].c[0];
-      var attrId = node.c[1].c[0];
-      var val = env.ctx[objId] !== undefined &&
-                env.ctx[objId][attrId] !== undefined ?
-                env.ctx[objId][attrId] : undefined;
-      return {
-        ref: [objId, attrId], // won't work if assign obj-attr to var
-        val: val
+      var objNode = Isla.Parser.extract(node, "object");
+      checkIdentifierParts(objNode, env);
+      var parts = identifierParts(objNode, env);
+      var val = env.ctx;
+      for (var i = 0; i < objNode.length; i++) {
+        var id = Isla.Parser.extract(objNode, i, "identifier", 0);
+        val = val[canonical(id, env)];
       }
+
+      return { ref: parts, val: val };
     });
+
+  var nonExistentError = function(identifier) {
+    throw "I have not heard of " + identifier.join(" ") + ".";
+  };
+
+  var checkIdentifierParts = function(objNode, env) {
+    var parts = identifierParts(objNode, env);
+    var val = env.ctx;
+    for (var i = 0; i < parts.length; i++) {
+      if (val === undefined) {
+        nonExistentError(parts.slice(0, i));
+      } else {
+        val = val[canonical(Isla.Parser.extract(objNode, i, "identifier", 0), env)];
+      }
+    }
+  };
+
+  var identifierParts = function(objNode, env) {
+    var parts = [];
+    for (var i = 0; i < objNode.length; i++) {
+      parts.push(Isla.Parser.extract(objNode, i, "identifier", 0));
+    }
+
+    return parts;
+  };
 
   var assign = multimethod()
     .dispatch(function(__, assigneeNode) {
@@ -173,10 +195,14 @@
 
     .when("object", function(env, assigneeNode, value) {
       var objNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "object");
-      var initObjIdentifier = Isla.Parser.extract(objNode, 0, "identifier", 0);
-      var objIdentifier = canonical(initObjIdentifier, env);
-      var slotIdentifier = Isla.Parser.extract(objNode, 1, "identifier", 0);
-      env.ctx[objIdentifier][slotIdentifier] = value;
+      checkIdentifierParts(objNode, env);
+      var slot = env.ctx;
+      for (var i = 0; i < objNode.length - 1; i++) {
+        var id = canonical(Isla.Parser.extract(objNode, i, "identifier", 0), env);
+        slot = slot[id];
+      }
+
+      slot[Isla.Parser.extract(objNode, i, "identifier", 0)] = value;
       return env;
     });
 
@@ -241,9 +267,11 @@
 
   var canonical = function(identifier, env) {
     var next = env.ctx[identifier];
-    if (next.ref !== undefined) {
+    if (next === undefined) { // got scalar - just return id
+      return identifier;
+    } else if (next.ref !== undefined) { // keep going to find canon
       return canonical(next.ref, env);
-    } else {
+    } else { // got value - return id
       return identifier;
     }
   };
