@@ -117,7 +117,7 @@
     })
 
     .default(function(ast, env) {
-      throw "You've forgotten a tag type.";
+      throw { message:"You've forgotten a tag type." };
     });
 
   var evaluateValue = multimethod()
@@ -157,7 +157,7 @@
     });
 
   var nonExistentError = function(identifier) {
-    throw "I have not heard of " + identifier.join(" ") + ".";
+    throw { message:"I have not heard of " + identifier.join(" ") + "." };
   };
 
   var checkIdentifierParts = function(objNode, env) {
