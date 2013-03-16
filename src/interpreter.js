@@ -297,6 +297,7 @@
     return obj;
   };
 
+  exports.Interpreter.instantiateType = instantiateType;
   exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
   exports.Interpreter.interpretAst = interpretAst;
