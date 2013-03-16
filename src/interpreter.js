@@ -53,7 +53,7 @@
       var value = assignmentValue(valueNode);
 
       var env = assign(env, assignee, value);
-      return nreturn(env.ctx);
+      return rmRet(env);
     })
 
     .when("type_assignment", function(ast, env) {
@@ -68,7 +68,7 @@
 
       var value = instantiateType(typeFn, typeIdentifier);
       var env = assign(env, assignee, value);
-      return nreturn(env.ctx);
+      return rmRet(env);
     })
 
     .when("list_assignment", function(ast, env) {
@@ -85,7 +85,7 @@
       list[operation](item);
 
       var env = assign(env, assignee, currentListEval.val);
-      return nreturn(env.ctx);
+      return rmRet(env);
     })
 
     .when("invocation", function(ast, env) {
@@ -95,8 +95,8 @@
       var param = resolve(interpretAst(Isla.Parser.extract(ast,
                                                            "invocation", 1),
                                        env).val, env);
-      var returnVal = fn(env, param);
-      return nreturn(env.ctx, returnVal);
+      env.ret = fn(env, param);
+      return env;
     })
 
     .when("value", function(ast, env) {
@@ -297,14 +297,7 @@
     return env;
   }
 
-  var nreturn = function(ctx, ret) {
-    if(ret === undefined) {
-      return { ctx: ctx, ret: null };
     }
-    else {
-      return { ctx: ctx, ret: ret };
-    }
-  }
 
   exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
