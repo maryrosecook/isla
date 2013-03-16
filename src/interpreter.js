@@ -60,13 +60,7 @@
       var node = Isla.Parser.extract(ast, "type_assignment");
       var assignee = node[0];
       var typeIdentifier = interpretAst(node[2], env);
-
-      var typeFn = env.ctx._types[typeIdentifier];
-      if(typeFn === undefined) {
-        typeFn = env.ctx._types.generic;
-      }
-
-      var value = instantiateType(typeFn, typeIdentifier);
+      var value = instantiateType(typeIdentifier, env.ctx);
       var env = assign(env, assignee, value);
       return rmRet(env);
     })
@@ -286,18 +280,22 @@
     }
   }
 
-  var instantiateType = function(typeFn, identifier) {
-    var value = typeFn();
-    value._meta = { type: identifier };
-    return value;
-  }
-
   var rmRet = function(env) {
     env.ret = null;
     return env;
   }
 
+  // makes a new Isla object of the passed type
+  var instantiateType = function(type, ctx) {
+    var typeFn = ctx._types[type];
+    if(typeFn === undefined) {
+      typeFn = ctx._types.generic;
     }
+
+    var obj = typeFn();
+    obj._meta = { type:type };
+    return obj;
+  };
 
   exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
