@@ -85,7 +85,7 @@
     "  = all:'is' { return nnode('is', [all], column, 'keyword'); }",
 
     "is_a",
-    "  = all:'is a' { return nnode('is_a', [all], column, 'keyword'); }",
+    "  = 'is' w:_ 'a' { return nnode('is_a', ['is' + w.join('') + 'a'], column, 'keyword'); }",
 
     "add",
     "  = all:'add' { return nnode('add', [all], column, 'keyword'); }",

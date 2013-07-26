@@ -110,6 +110,15 @@ describe('parser', function() {
                                     {identifier: ["girl"]}]}]}]}]});
     });
 
+    it('should read as assignment of type instance if spaces between is and a', function() {
+      checkAst(p.parse("mary is  a girl"),
+               {root: [{block: [{expression:
+                                 [{type_assignment:
+                                   [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
+                                    {is_a: ["is  a"]},
+                                    {identifier: ["girl"]}]}]}]}]});
+    });
+
     it('should allow assignment to an object attribute', function() {
       checkAst(p.parse("mary friend is a girl"),
                {root: [{block: [{expression:
