@@ -23,6 +23,32 @@ var checkAst = multimethod()
   });
 
 describe('parser', function() {
+  describe('find', function() {
+    it('should find node when is the node initially passed in', function() {
+      expect(p.find(p.parse("x y is '1'"), "root").tag).toEqual("root");
+    });
+
+    it('should find node when is a couple of layers down', function() {
+      expect(p.find(p.parse("x y is '1'"), "expression").tag).toEqual("expression");
+    });
+
+    it('should find node that is a leaf', function() {
+      expect(p.find(p.parse("x y is '1'"), "string").c[0]).toEqual('1');
+    });
+
+    it('should find node for which there are other versions elsewhere', function() {
+      expect(p.find(p.find(p.parse("x y is m n"), "object").c[0].c[0])).toEqual('x');
+    });
+
+    it('should find node when it is not the first token in an array', function() {
+      expect(p.find(p.parse("x y is '1'"), "value").tag).toEqual("value");
+    });
+
+    it('should return undefined when no node tagged with passed tag', function() {
+      expect(p.find(p.parse("x y is '1'"), "hellno")).toBeUndefined();
+    });
+  });
+
   describe('assignment to scalar', function(){
     it('should assign an identifier', function() {
       checkAst(p.parse("isla is age"),

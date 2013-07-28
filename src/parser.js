@@ -11,6 +11,7 @@
     pegjs = require("pegjs");
     Isla = {};
     Isla.Grammar = require('./grammar').Grammar;
+    Isla.Utils = require('./utils').Utils;
   } else { // browser
     _ = window._;
     multimethod = window.multimethod;
@@ -56,6 +57,17 @@
       throw "Route items must be tags or indices.";
     });
 
+  // returns first node tagged with passed tag
+  var find = function(node, tag) {
+    if (node.tag === tag) {
+      return node;
+    } else if (node.c !== undefined && Isla.Utils.type(node.c) === "Array") {
+      return _.reduce(node.c, function(a, x) {
+        return a === undefined ? find(x, tag) : a;
+      }, undefined);
+    }
+  };
+
   var extractNext = function(ast, args) {
     var nextArgs = _.rest(_.rest(_.toArray(args)));
     nextArgs.unshift(ast);
@@ -63,4 +75,5 @@
   }
 
   exports.Parser.extract = extract;
+  exports.Parser.find = find;
 })(typeof exports === 'undefined' ? this.Isla : exports);
