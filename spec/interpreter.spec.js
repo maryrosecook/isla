@@ -40,6 +40,12 @@ describe('interpreter', function() {
       expect(env.ctx.mary.age).toEqual('1');
       expect(interpreter.resolve({ ref:"a" }, env).age).toEqual('1');
     });
+
+    it('should assign new value to canonical version of var', function() {
+      var code = "b is a q\nm is a q\nm n is b\nm n c is '2'";
+      var env = interpreter.interpret(code);
+      expect(interpreter.lookupVariable(["m", "n", "c"], env)).toEqual('2');
+    });
   });
 
   describe('assignment, references and object types', function(){
@@ -70,6 +76,12 @@ describe('interpreter', function() {
         expect(function() {
           interpreter.interpret("a is a thing\na b c is '1'");
         }).toThrow("I have not heard of a b.");
+      });
+
+      it('should complain if try to assign attribute of primitive', function() {
+        expect(function() {
+          interpreter.interpret("a is '1'\na b is '2'");
+        }).toThrow("a can not have b.");
       });
 
       it('should complain about non-existent assigned top level thing', function() {
@@ -216,7 +228,7 @@ describe('interpreter', function() {
       it('should be able to add ref to a list', function() {
         var code = "items is a list\nmary is a person\nadd mary to items";
         var env = interpreter.interpret(code);
-        expect(env.ctx.items.items()).toEqual([{ ref: "mary" }]);
+        expect(env.ctx.items.items()).toEqual([{ ref: ["mary"] }]);
       });
 
       it('should be able to add scalar attr of obj that is attr of obj to a list', function() {
@@ -256,7 +268,7 @@ describe('interpreter', function() {
       it('should be able to add resolved obj to a list', function() {
         var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
         var env = interpreter.interpret(code);
-        expect(env.ctx.a.friend).toEqual({ ref: "b" });
+        expect(env.ctx.a.friend).toEqual({ ref: ["b"] });
         var resolvedB = interpreter.resolve(env.ctx.a.friend, env);
 
         var list = new library.List();
@@ -309,6 +321,12 @@ describe('interpreter', function() {
         var code = "isla is a person\nisla items is a list\nadd '1' to isla items";
         var env = interpreter.interpret(code);
         expect(interpreter.resolve({ ref:"isla" }, env).items.items()).toEqual(['1']);
+      });
+
+      it('should add canonical version of item to list', function() {
+        var code = "i is a list\na is '1'\nm is a q\nm n is a\nadd m n to i";
+        var env = interpreter.interpret(code);
+        expect(env.ctx.i.items()).toEqual(['1']);
       });
     });
 

@@ -114,6 +114,12 @@
       throw { message:"You've forgotten a tag type." };
     });
 
+  var lookupVariable = function(parts, env) {
+    return _.reduce(parts, function(a, x) {
+      return a !== undefined ? canonical(a[x], env) : undefined;
+    }, env.ctx);
+  };
+
   var evaluateValue = multimethod()
     .dispatch(function(node, env) {
       return node.tag;
@@ -124,46 +130,17 @@
     })
 
     .when("variable", function(node, env) {
-      return evaluateValue(node.c[0], env);
+      var parts = identifierParts(Isla.Parser.extract(node, "variable"), env);
+      _.reduce(parts, function(a, x, i) {
+        var next = canonical(a[x], env);
+        return next !== undefined ? next : nonExistentError(parts.slice(0, i + 1));
+      }, env.ctx);
+
+      return { ref: parts, val: lookupVariable(parts, env) };
     })
-
-    .when("scalar", function(node, env) {
-      var identifier = interpretAst(node.c[0], env);
-      var val = env.ctx[identifier];
-      if (val === undefined) {
-        nonExistentError([identifier]);
-      } else {
-        return { ref: identifier, val: val };
-      }
-    })
-
-    .when("object", function(node, env) {
-      var objNode = Isla.Parser.extract(node, "object");
-      checkIdentifierParts(objNode, env);
-      var parts = identifierParts(objNode, env);
-      var val = env.ctx;
-      for (var i = 0; i < objNode.length; i++) {
-        var id = Isla.Parser.extract(objNode, i, "identifier", 0);
-        val = val[canonical(id, env)];
-      }
-
-      return { ref: parts, val: val };
-    });
 
   var nonExistentError = function(identifier) {
     throw { message:"I have not heard of " + identifier.join(" ") + "." };
-  };
-
-  var checkIdentifierParts = function(objNode, env) {
-    var parts = identifierParts(objNode, env);
-    var val = env.ctx;
-    for (var i = 0; i < parts.length; i++) {
-      if (val === undefined) {
-        nonExistentError(parts.slice(0, i));
-      } else {
-        val = val[canonical(Isla.Parser.extract(objNode, i, "identifier", 0), env)];
-      }
-    }
   };
 
   var identifierParts = function(objNode, env) {
@@ -177,23 +154,34 @@
 
   var assign = multimethod()
     .dispatch(function(__, assigneeNode) {
-      return assigneeNode.c[0].tag;
+      return Isla.Parser.extract(assigneeNode, "assignee", 0, "variable").length
     })
 
-    .when("scalar", function(env, assigneeNode, value) {
+    .when(1, function(env, assigneeNode, value) {
       var identifier = Isla.Parser.extract(assigneeNode, "assignee", 0,
-                                           "scalar", 0, "identifier", 0);
+                                           "variable", 0, "identifier", 0);
       env.ctx[identifier] = value;
       return env;
     })
 
-    .when("object", function(env, assigneeNode, value) {
-      var objNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "object");
-      checkIdentifierParts(objNode, env);
+    .default(function(env, assigneeNode, value) {
+      var objNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "variable");
+      var parts = identifierParts(objNode, env);
+
+      _.reduce(parts.slice(0, parts.length - 1), function(a, x, i) {
+        var next = canonical(a[x], env);
+        return next !== undefined ? next : nonExistentError(parts.slice(0, i + 1));
+      }, env.ctx);
+
       var slot = env.ctx;
       for (var i = 0; i < objNode.length - 1; i++) {
         var id = canonical(Isla.Parser.extract(objNode, i, "identifier", 0), env);
-        slot = slot[id];
+        slot = canonical(slot[id], env);
+      }
+
+      if (Isla.Utils.type(slot) === 'String') {
+        throw { message: parts[parts.length - 2] + " can not have " +
+                parts[parts.length - 1] + "." };
       }
 
       slot[Isla.Parser.extract(objNode, i, "identifier", 0)] = value;
@@ -227,7 +215,7 @@
       } else if(thing._meta && thing._meta.type === "list") {
         return "list";
       } else if(Isla.Utils.type(thing) === "Object") {
-        return thing.ref === undefined ? "object" : "ref";
+        return thing.ref === undefined ? "variable" : "ref";
       }
     })
 
@@ -235,7 +223,7 @@
       return resolve(env.ctx[thing.ref], env);
     })
 
-    .when("object", function(thing, env) {
+    .when("variable", function(thing, env) {
       for(var i in thing) {
         if(i !== "_meta") {
           thing[i] = resolve(thing[i], env);
@@ -259,14 +247,13 @@
       return thing;
     });
 
-  var canonical = function(identifier, env) {
-    var next = env.ctx[identifier];
-    if (next === undefined) { // got scalar - just return id
-      return identifier;
-    } else if (next.ref !== undefined) { // keep going to find canon
-      return canonical(next.ref, env);
-    } else { // got value - return id
-      return identifier;
+  var canonical = function(obj, env) {
+    if (obj === undefined) {
+      return undefined;
+    } else if (obj.ref !== undefined) {
+      return canonical(env.ctx[obj.ref[0]], env);
+    } else {
+      return obj;
     }
   };
 
@@ -300,5 +287,6 @@
   exports.Interpreter.instantiateType = instantiateType;
   exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
+  exports.Interpreter.lookupVariable = lookupVariable;
   exports.Interpreter.interpretAst = interpretAst;
 })(typeof exports === 'undefined' ? this.Isla : exports);

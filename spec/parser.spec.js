@@ -37,7 +37,7 @@ describe('parser', function() {
     });
 
     it('should find node for which there are other versions elsewhere', function() {
-      expect(p.find(p.find(p.parse("x y is m n"), "object").c[0].c[0])).toEqual('x');
+      expect(p.find(p.find(p.parse("x y is m n"), "variable").c[0].c[0])).toEqual('x');
     });
 
     it('should find node when it is not the first token in an array', function() {
@@ -54,17 +54,17 @@ describe('parser', function() {
       checkAst(p.parse("isla is age"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["isla"]}]}]},
                                     {is: ["is"]},
                                     {value: [{variable:
-                                              [{scalar: [{identifier: ["age"]}]}]}]}]}]}]}]});
+                                              [{identifier: ["age"]}]}]}]}]}]}]});
     });
 
     it('should assign a string in single quotes', function() {
       checkAst(p.parse("isla is 'cool'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["isla"]}]}]},
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ["cool"]}]}]}]}]}]}]});
     });
@@ -73,7 +73,7 @@ describe('parser', function() {
       checkAst(p.parse("isla is \"cool\""),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["isla"]}]}]},
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ["cool"]}]}]}]}]}]}]});
     });
@@ -90,7 +90,7 @@ describe('parser', function() {
       checkAst(p.parse("isla age is '1'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{object:
+                                   [{assignee: [{variable:
                                                  [{identifier: ["isla"]},
                                                   {identifier: ["age"]}]}]},
                                     {is: ["is"]},
@@ -101,7 +101,7 @@ describe('parser', function() {
       checkAst(p.parse("isla jacket sleeve color is 'red'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{object:
+                                   [{assignee: [{variable:
                                                  [{identifier: ["isla"]},
                                                   {identifier: ["jacket"]},
                                                   {identifier: ["sleeve"]},
@@ -116,13 +116,13 @@ describe('parser', function() {
       checkAst(p.parse("color is isla jacket sleeve color"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["color"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["color"]}]}]},
                                     {is: ["is"]},
                                     {value: [{variable:
-                                              [{object: [{identifier: ["isla"]},
-                                                         {identifier: ["jacket"]},
-                                                         {identifier: ["sleeve"]},
-                                                         {identifier: ["color"]}]}]}]}]}]}]}]});
+                                              [{identifier: ["isla"]},
+                                               {identifier: ["jacket"]},
+                                               {identifier: ["sleeve"]},
+                                               {identifier: ["color"]}]}]}]}]}]}]});
     });
   });
 
@@ -131,7 +131,7 @@ describe('parser', function() {
       checkAst(p.parse("mary is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["mary"]}]}]},
                                     {is_a: ["is a"]},
                                     {identifier: ["girl"]}]}]}]}]});
     });
@@ -140,7 +140,7 @@ describe('parser', function() {
       checkAst(p.parse("mary friend is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
-                                   [{assignee: [{object:
+                                   [{assignee: [{variable:
                                                  [{identifier: ["mary"]},
                                                   {identifier: ["friend"]}]}]},
                                     {is_a: ["is a"]},
@@ -151,7 +151,7 @@ describe('parser', function() {
       checkAst(p.parse("mary friend niece is a girl"),
                {root: [{block: [{expression:
                                  [{type_assignment:
-                                   [{assignee: [{object:
+                                   [{assignee: [{variable:
                                                  [{identifier: ["mary"]},
                                                   {identifier: ["friend"]},
                                                   {identifier: ["niece"]}]}]},
@@ -165,12 +165,12 @@ describe('parser', function() {
       checkAst(p.parse("isla is '1'\nmary is '2'"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["isla"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["isla"]}]}]},
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ['1']}]}]}]}]},
                                 {expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["mary"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["mary"]}]}]},
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ['2']}]}]}]}]}]}]});
     });
@@ -179,7 +179,7 @@ describe('parser', function() {
       checkAst(p.parse("name is 'Isla'\nwrite 'la'\nwrite name"),
                {root: [{block: [{expression:
                                  [{value_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["name"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["name"]}]}]},
                                     {is: ["is"]},
                                     {value: [{literal: [{string: ["Isla"]}]}]}]}]},
                                 {expression:
@@ -190,7 +190,7 @@ describe('parser', function() {
                                  [{invocation:
                                    [{identifier: ["write"]},
                                     {value: [{variable:
-                                              [{scalar: [{identifier: ["name"]}]}]}]}]}]}
+                                              [{identifier: ["name"]}]}]}]}]}
                                 ]}]});
     });
   });
@@ -256,7 +256,7 @@ describe('parser', function() {
                                  [{invocation:
                                    [{identifier: ["write"]},
                                     {value: [{variable:
-                                              [{scalar: [{identifier: ["isla"]}]}]}]}]}]}]}]});
+                                              [{identifier: ["isla"]}]}]}]}]}]}]});
     });
 
     it('should allow invocation with scalar literal', function() {
@@ -273,8 +273,8 @@ describe('parser', function() {
                                  [{invocation:
                                    [{identifier: ["write"]},
                                     {value: [{variable:
-                                              [{object: [{identifier: ["isla"]},
-                                                         {identifier: ["age"]}]}]}]}]}]}]}]});
+                                              [{identifier: ["isla"]},
+                                               {identifier: ["age"]}]}]}]}]}]}]});
     });
 
     it('should allow invocation with nested object attribute', function() {
@@ -283,10 +283,10 @@ describe('parser', function() {
                                  [{invocation:
                                    [{identifier: ["write"]},
                                     {value: [{variable:
-                                              [{object: [{identifier: ["isla"]},
-                                                         {identifier: ["jacket"]},
-                                                         {identifier: ["sleeve"]},
-                                                         {identifier: ["color"]}]}]}]}]}]}]}]});
+                                              [{identifier: ["isla"]},
+                                               {identifier: ["jacket"]},
+                                               {identifier: ["sleeve"]},
+                                               {identifier: ["color"]}]}]}]}]}]}]});
     });
 
     it('should not show string regression', function() {
@@ -304,7 +304,7 @@ describe('parser', function() {
       checkAst(p.parse("items is a list"),
                {root: [{block: [{expression:
                                  [{type_assignment:
-                                   [{assignee: [{scalar: [{identifier: ["items"]}]}]},
+                                   [{assignee: [{variable: [{identifier: ["items"]}]}]},
                                     {is_a: ["is a"]},
                                     {identifier: ["list"]}]}]}]}]});
 
@@ -322,10 +322,9 @@ describe('parser', function() {
                                  [{list_assignment:
                                    [{list_operation: [{add: ["add"]}]},
                                     {value: [{variable:
-                                              [{scalar:
-                                                [{identifier: ["sword"]}]}]}]},
+                                              [{identifier: ["sword"]}]}]},
                                     {to_from: ["to from"]},
-                                    {assignee: [{scalar: [{identifier: ["items"]}]}]}]}]}]}]})
+                                    {assignee: [{variable: [{identifier: ["items"]}]}]}]}]}]}]})
     });
   });
 
@@ -391,12 +390,12 @@ describe('parser', function() {
       describe('assignments', function() {
         it('should annotate in scalar assignment', function() {
           expect(p.extract(astExpression("x is 'y'"),
-                                0, "assignee", 0).syntax).toEqual("variable");
+                                0, "assignee", 0, "variable", 0).syntax).toEqual("variable");
         });
 
         it('should annotate in object assignment', function() {
           expect(p.extract(astExpression("x y is 'z'"),
-                                0, "assignee", 0, "object", 0).syntax)
+                                0, "assignee", 0, "variable", 0).syntax)
           .toEqual("variable");
         });
       });
@@ -404,12 +403,12 @@ describe('parser', function() {
       describe('type instantiations', function() {
         it('should annotate in scalar type instantiation', function() {
           expect(p.extract(astExpression("x is a y"),
-                                0, "assignee", 0).syntax).toEqual("variable");
+                                0, "assignee", 0, "variable", 0).syntax).toEqual("variable");
         });
 
         it('should annotate in an attribute type instantiation', function() {
           expect(p.extract(astExpression("x y is a z"),
-                                0, "assignee", 0, "object", 0).syntax)
+                                0, "assignee", 0, "variable", 0).syntax)
           .toEqual("variable");
         });
       });
@@ -423,7 +422,7 @@ describe('parser', function() {
 
         it('should annotate list in a list operation', function() {
           expect(p.extract(astExpression("add x to y"),
-                                3, "assignee", 0).syntax).toEqual("variable");
+                                3, "assignee", 0, "variable", 0).syntax).toEqual("variable");
         });
       });
 
@@ -436,7 +435,7 @@ describe('parser', function() {
 
         it('should annotate in object param', function() {
           expect(p.extract(astExpression("write x y"),
-                                1, "value", 0, "variable", 0, "object", 0).syntax)
+                                1, "value", 0, "variable", 0).syntax)
           .toEqual("variable");
         });
       });
@@ -478,7 +477,7 @@ describe('parser', function() {
     describe('identifier', function() {
       it('should allow underscores in identifiers', function() {
         expect(p.extract(astExpression("x _y is 'z'"),
-                              0, "assignee", 0, "object", 1).syntax)
+                              0, "assignee", 0, "variable", 1).syntax)
         .toEqual("attribute");
       });
     });
@@ -487,7 +486,7 @@ describe('parser', function() {
       describe('assignments', function() {
         it('should annotate in object assignment', function() {
           expect(p.extract(astExpression("x y is 'z'"),
-                                0, "assignee", 0, "object", 1).syntax)
+                                0, "assignee", 0, "variable", 1).syntax)
           .toEqual("attribute");
         });
       });
@@ -495,7 +494,7 @@ describe('parser', function() {
       describe('type instantiations', function() {
         it('should annotate in an attribute type instantiation', function() {
           expect(p.extract(astExpression("x y is a z"),
-                                0, "assignee", 0, "object", 1).syntax)
+                                0, "assignee", 0, "variable", 1).syntax)
           .toEqual("attribute");
         });
       });
@@ -503,7 +502,7 @@ describe('parser', function() {
       describe('list operations', function() {
         it('should annotate is a list op on a obj attribute', function() {
           expect(p.extract(astExpression("add x to y z"),
-                                3, "assignee", 0, "object", 1).syntax)
+                                3, "assignee", 0, "variable", 1).syntax)
           .toEqual("attribute");
         });
       });
@@ -511,7 +510,7 @@ describe('parser', function() {
       describe('invocations', function() {
         it('should annotate in object param', function() {
           expect(p.extract(astExpression("write x y"),
-                                1, "value", 0, "variable", 0, "object", 1).syntax)
+                                1, "value", 0, "variable", 1).syntax)
           .toEqual("attribute");
         });
       });

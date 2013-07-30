@@ -55,8 +55,7 @@
     "  / all:take { return nnode('list_operation', [all], column); }",
 
     "assignee",
-    "  = all:object { return nnode('assignee', [all], column); }",
-    "  / all:scalar { return nnode('assignee', [all], column); }",
+    "  = all:variable { return nnode('assignee', [all], column); }",
 
     "value",
     "  = all:literal { return nnode('value', [all], column); }",
@@ -69,16 +68,9 @@
     "  = !keyword init:init_identifier_char rest:identifier_char* { return nnode('identifier', [init + rest.join('')], column); }",
 
     "variable",
-    "  = all:object { return nnode('variable', [all], column); }",
-    "  / all:scalar { return nnode('variable', [all], column); }",
+    "  = id:identifier rest:variable_rest* { return nnode('variable', [syn(id, 'variable')].concat(rest), column); }",
 
-    "scalar",
-    "  = all:identifier { return nnode('scalar', [all], column, 'variable'); }",
-
-    "object",
-    "  = id1:identifier _ id2:identifier rest:object_rest* { return nnode('object', [syn(id1, 'variable'), syn(id2, 'attribute')].concat(rest), column); }",
-
-    "object_rest",
+    "variable_rest",
     "  = _ id:identifier { return syn(id, 'attribute'); }",
 
     "is",

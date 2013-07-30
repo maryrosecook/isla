@@ -76,9 +76,18 @@
     }
   };
 
+  var sameRef = function(a, b) {
+    if (a === undefined || b === undefined) return false;
+    if (a.ref === undefined || b.ref === undefined) return false;
+    if (a.ref.length !== b.ref.length) return false;
+    return _.every(_.zip(a.ref, b.ref), function(x) {
+      return x[0] === x[1];
+    });
+  };
+
   var objsEqual = function(a, b) {
     // can't check for dupes where one resolved and other ref - haven't got env
-    return (a.ref === b.ref && a.ref) || // same ref
+    return sameRef(a, b) ||
       a === b; // same resolved obj
   }
 
