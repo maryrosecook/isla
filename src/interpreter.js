@@ -49,8 +49,7 @@
     .when("value_assignment", function(ast, env) {
       var node = Isla.Parser.extract(ast, "value_assignment");
       var assignee = node[0];
-      var valueNode = interpretAst(node[2], env);
-      var value = assignmentValue(valueNode);
+      var value = interpretAst(node[2], env);
 
       var env = assign(env, assignee, value);
       return rmRet(env);
@@ -68,27 +67,21 @@
     .when("list_assignment", function(ast, env) {
       var node = Isla.Parser.extract(ast, "list_assignment");
       var assignee = node[3];
-      var currentListEval = evaluateValue(Isla.Parser.extract(assignee,
-                                                              "assignee", 0),
-                                                              env);
+      var list = evaluateValue(Isla.Parser.extract(assignee, "assignee", 0),
+                               env);
       var operation = Isla.Parser.extract(node, 0, "list_operation", 0).tag;
-      var itemEval = interpretAst(Isla.Parser.extract(node, 1), env);
-      var item = assignmentValue(itemEval);
+      var item = interpretAst(Isla.Parser.extract(node, 1), env);
 
-      var list = currentListEval.val;
       list[operation](item);
 
-      var env = assign(env, assignee, currentListEval.val);
+      var env = assign(env, assignee, list);
       return rmRet(env);
     })
 
     .when("invocation", function(ast, env) {
-      var fn = resolve({
-        ref: interpretAst(Isla.Parser.extract(ast, "invocation", 0), env)
-      }, env).fn;
-      var param = resolve(interpretAst(Isla.Parser.extract(ast,
-                                                           "invocation", 1),
-                                       env).val, env);
+      var fn = evaluateValue(Isla.Parser.extract(ast, "invocation", 0), env).fn;
+      var param = interpretAst(Isla.Parser.extract(ast, "invocation", 1),
+                               env);
       env.ret = fn(env, param);
       return env;
     })
@@ -116,7 +109,7 @@
 
   var lookupVariable = function(parts, env) {
     return _.reduce(parts, function(a, x) {
-      return a !== undefined ? canonical(a[x], env) : undefined;
+      return a !== undefined ? a[x] : undefined;
     }, env.ctx);
   };
 
@@ -126,17 +119,20 @@
     })
 
     .when("literal", function(node, env) {
-      return { val: interpretAst(node.c[0], env) };
+      return interpretAst(node.c[0], env);
+    })
+
+    .when("identifier", function(node, env) { // for function names
+      return lookupVariable([node.c[0]], env);
     })
 
     .when("variable", function(node, env) {
       var parts = identifierParts(Isla.Parser.extract(node, "variable"), env);
       _.reduce(parts, function(a, x, i) {
-        var next = canonical(a[x], env);
-        return next !== undefined ? next : nonExistentError(parts.slice(0, i + 1));
+        return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
       }, env.ctx);
 
-      return { ref: parts, val: lookupVariable(parts, env) };
+      return lookupVariable(parts, env);
     })
 
   var nonExistentError = function(identifier) {
@@ -169,14 +165,13 @@
       var parts = identifierParts(objNode, env);
 
       _.reduce(parts.slice(0, parts.length - 1), function(a, x, i) {
-        var next = canonical(a[x], env);
-        return next !== undefined ? next : nonExistentError(parts.slice(0, i + 1));
+        return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
       }, env.ctx);
 
       var slot = env.ctx;
       for (var i = 0; i < objNode.length - 1; i++) {
-        var id = canonical(Isla.Parser.extract(objNode, i, "identifier", 0), env);
-        slot = canonical(slot[id], env);
+        var id = Isla.Parser.extract(objNode, i, "identifier", 0);
+        slot = slot[id];
       }
 
       if (Isla.Utils.type(slot) === 'String') {
@@ -187,75 +182,6 @@
       slot[Isla.Parser.extract(objNode, i, "identifier", 0)] = value;
       return env;
     });
-
-  // returns appropriate value for valueNode being assigned
-  // actual value for primitives, refs
-  var assignmentValue = multimethod()
-    .dispatch(function(valueNode) {
-      return typeof(valueNode.val);
-    })
-
-    .when("string", function(valueNode) {
-      return valueNode.val;
-    })
-
-    .when("number", function(valueNode) {
-      return valueNode.val;
-    })
-
-    .default(function(valueNode) {
-      return valueNode.ref === undefined ? valueNode.val :
-                                           { ref: valueNode.ref };
-    });
-
-  var resolve = multimethod()
-    .dispatch(function(thing) {
-      if (thing == null) {
-        return thing;
-      } else if(thing._meta && thing._meta.type === "list") {
-        return "list";
-      } else if(Isla.Utils.type(thing) === "Object") {
-        return thing.ref === undefined ? "variable" : "ref";
-      }
-    })
-
-    .when("ref", function(thing, env) {
-      return resolve(env.ctx[thing.ref], env);
-    })
-
-    .when("variable", function(thing, env) {
-      for(var i in thing) {
-        if(i !== "_meta") {
-          thing[i] = resolve(thing[i], env);
-        }
-      }
-
-      return thing;
-    })
-
-    .when("list", function(thing, env) {
-      var items = thing.items();
-      var resolvedList = new Isla.Library.List();
-      for(var i = 0; i < items.length; i++) {
-        resolvedList.add(resolve(items[i], env));
-      }
-
-      return resolvedList;
-    })
-
-    .default(function(thing) {
-      return thing;
-    });
-
-  var canonical = function(obj, env) {
-    if (obj === undefined) {
-      return undefined;
-    } else if (obj.ref !== undefined) {
-      return canonical(env.ctx[obj.ref[0]], env);
-    } else {
-      return obj;
-    }
-  };
 
   var runSequence = function(nodes, env) {
     if(nodes.length === 0) {
@@ -285,7 +211,6 @@
   };
 
   exports.Interpreter.instantiateType = instantiateType;
-  exports.Interpreter.resolve = resolve;
   exports.Interpreter.evaluateValue = evaluateValue;
   exports.Interpreter.lookupVariable = lookupVariable;
   exports.Interpreter.interpretAst = interpretAst;

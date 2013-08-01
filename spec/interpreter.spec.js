@@ -11,40 +11,24 @@ var newObj = function(type, data) {
 };
 
 describe('interpreter', function() {
-  describe('resolve', function(){
-    it('should cope with undefined param', function() {
-      expect(interpreter.resolve(undefined, library.getInitialEnv())).toBeUndefined();
-    });
-
-    it('should cope with null param', function() {
-      expect(interpreter.resolve(null, library.getInitialEnv())).toBeNull();
-    });
-  });
-
   describe('reference updating', function(){
     it('should produce right data if follow scalar ref made before obj updated', function() {
       var code = "isla is a person\nfriend is isla\nisla age is '1'";
       var env = interpreter.interpret(code);
-      expect(interpreter.resolve({ ref: "friend" }, env).age).toEqual('1');
+      expect(env.ctx.friend.age).toEqual('1');
     });
 
-    it('should produce right data if follow attr ref made before obj updated', function() {
+    it('should produce right data if follow attr made before obj updated', function() {
       var code = "isla is a person\nmary is a person\nmary friend is isla\nisla age is '1'";
       var env = interpreter.interpret(code);
-      expect(interpreter.resolve({ ref: "mary" }, env).friend.age).toEqual('1');
+      expect(env.ctx.mary.friend.age).toEqual('1');
     });
 
     it('should update original when ref attr changed', function() {
       var code = "mary is a person\na is mary\na age is '1'";
       var env = interpreter.interpret(code);
       expect(env.ctx.mary.age).toEqual('1');
-      expect(interpreter.resolve({ ref:"a" }, env).age).toEqual('1');
-    });
-
-    it('should assign new value to canonical version of var', function() {
-      var code = "b is a q\nm is a q\nm n is b\nm n c is '2'";
-      var env = interpreter.interpret(code);
-      expect(interpreter.lookupVariable(["m", "n", "c"], env)).toEqual('2');
+      expect(env.ctx.a.age).toEqual('1');
     });
   });
 
@@ -60,8 +44,8 @@ describe('interpreter', function() {
       it('should use ref when obj assigned', function() {
         var code = "mary is a person\na is mary\nb is mary\na age is '1'";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve(env.ctx.a, env).age).toEqual('1');
-        expect(interpreter.resolve(env.ctx.b, env).age).toEqual('1');
+        expect(env.ctx.a.age).toEqual('1');
+        expect(env.ctx.b.age).toEqual('1');
       });
     });
 
@@ -111,16 +95,7 @@ describe('interpreter', function() {
       it('should be able to assign nested attr to scalar', function() {
         var code = "x is a thing\nx y is a thing\nx y z is '1'\na is x y z";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve(env.ctx.a, env)).toEqual('1');
-      });
-    });
-
-    describe('scalar assigned to object attribute', function(){
-      it('should use ref when obj assigned', function() {
-        var code = "x is a person\ny is a person\ny age is '1'\nx friend is y\ny age is '2'";
-        var env = interpreter.interpret(code);
-        expect(interpreter.resolve(env.ctx.x.friend, env).age).toEqual('2');
-        expect(env.ctx.y.age).toEqual('2');
+        expect(env.ctx.a).toEqual('1');
       });
     });
 
@@ -131,9 +106,6 @@ describe('interpreter', function() {
         expect(env.ctx.x.age).toEqual('2');
         expect(env.ctx.y).toEqual('1');
       });
-
-      // not possible - can't syntax does not allow x friend age is '2'
-      it('should use ref when obj assigned', function() {});
     });
 
     describe('object attribute assigned to object attribute', function(){
@@ -143,9 +115,6 @@ describe('interpreter', function() {
         expect(env.ctx.x.age).toEqual('2');
         expect(env.ctx.y.age).toEqual('1');
       });
-
-      // not possible - can't syntax does not allow x friend age is '2'
-      it('should use ref when obj assigned', function() {});
     });
   });
 
@@ -222,13 +191,13 @@ describe('interpreter', function() {
     describe('addition', function() {
       it('should be able to add string to a list', function() {
         var env = interpreter.interpret("items is a list\nadd 'sword' to items");
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["sword"]);
+        expect(env.ctx.items.items()).toEqual(["sword"]);
       });
 
       it('should be able to add ref to a list', function() {
         var code = "items is a list\nmary is a person\nadd mary to items";
         var env = interpreter.interpret(code);
-        expect(env.ctx.items.items()).toEqual([{ ref: ["mary"] }]);
+        expect(env.ctx.items.items()[0]._meta.type).toEqual("person");
       });
 
       it('should be able to add scalar attr of obj that is attr of obj to a list', function() {
@@ -241,7 +210,7 @@ describe('interpreter', function() {
       it('should be able to add obj attr of obj that is attr of obj to a list', function() {
         var code = "i is a list\na is a thing\na b is a thing\na b c is a thing\nadd a b c to i";
         var env = interpreter.interpret(code);
-        expect(env.ctx.i.items()).toEqual([{ ref: ['a', 'b', 'c']}]);
+        expect(env.ctx.i.items()[0]._meta.type).toEqual("thing");
       });
 
 
@@ -259,68 +228,34 @@ describe('interpreter', function() {
         var env = interpreter.interpret(code);
 
         var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        list.add(env.ctx.a.friend, env);
         expect(list.items().length).toEqual(1);
-        list.add(interpreter.resolve(env.ctx.a, env));
+        list.add(env.ctx.a, env);
         expect(list.items().length).toEqual(2);
       });
 
-      it('should be able to add resolved obj to a list', function() {
-        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
-        var env = interpreter.interpret(code);
-        expect(env.ctx.a.friend).toEqual({ ref: ["b"] });
-        var resolvedB = interpreter.resolve(env.ctx.a.friend, env);
-
-        var list = new library.List();
-        list.add(resolvedB);
-        expect(list.items()[0].age).toEqual('1');
-      });
-
-      it('should not be able to add same resolved obj to a list twice', function() {
+      it('should not be able to add same obj to a list twice', function() {
         var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
         var env = interpreter.interpret(code);
 
         var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        list.add(env.ctx.a.friend, env);
+        list.add(env.ctx.a.friend, env);
 
         expect(list.items()[0].age).toEqual('1');
         expect(list.items().length).toEqual(1);
-      });
-
-      it('should NOT be able to avoid adding resolved version of ref (or vice versa)', function() {
-        var c = "a is a person\nb is a person\nb age is '1'\na friend is b";
-        var env = interpreter.interpret(c);
-
-        var list = new library.List();
-        list.add(env.ctx.a.friend);
-        expect(list.items().length).toEqual(1);
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(2);
-
-        var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(1);
-        list.add(env.ctx.a.friend);
-        expect(list.items().length).toEqual(2);
       });
 
       it('should be able to add dupe string to list', function() {
         var code = "items is a list\nadd 'sword' to items\nadd 'sword' to items";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["sword", "sword"]);
-      });
-
-      it('should do nothing if add same ref twice', function() {
-        var code = "mary is a person\nitems is a list\nadd mary to items\nadd mary to items";
-        var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([newObj("person")]);
+        expect(env.ctx.items.items()).toEqual(["sword", "sword"]);
       });
 
       it('should be able to add item to list that is an attr', function() {
         var code = "isla is a person\nisla items is a list\nadd '1' to isla items";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"isla" }, env).items.items()).toEqual(['1']);
+        expect(env.ctx.isla.items.items()).toEqual(['1']);
       });
 
       it('should add canonical version of item to list', function() {
@@ -334,7 +269,7 @@ describe('interpreter', function() {
       it('should be able to take string from a list', function() {
         var code = "items is a list\nadd 'sword' to items\ntake 'sword' from items";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([]);
+        expect(env.ctx.items.items()).toEqual([]);
       });
 
       it('should be able to take ref from a list', function() {
@@ -350,50 +285,22 @@ describe('interpreter', function() {
         var env = interpreter.interpret(code);
 
         var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
+        list.add(env.ctx.a.friend, env);
         expect(list.items().length).toEqual(1);
-        list.take(interpreter.resolve(env.ctx.a, env));
-        expect(list.items().length).toEqual(1);
-      });
-
-      it('should be able to take resolved item from list', function() {
-        var code = "a is a person\nb is a person\nb age is '1'\na friend is b";
-        var env = interpreter.interpret(code);
-
-        var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(1);
-        list.take(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(0);
-      });
-
-      it('should NOT be able to take resolved version of ref from list (or vice versa)', function() {
-        var c = "a is a person\nb is a person\nb age is '1'\na friend is b";
-        var env = interpreter.interpret(c);
-
-        var list = new library.List();
-        list.add(env.ctx.a.friend);
-        expect(list.items().length).toEqual(1);
-        list.take(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(1);
-
-        var list = new library.List();
-        list.add(interpreter.resolve(env.ctx.a.friend, env));
-        expect(list.items().length).toEqual(1);
-        list.take(env.ctx.a.friend);
+        list.take(env.ctx.a, env);
         expect(list.items().length).toEqual(1);
       });
 
       it('should do nothing if try to take non-existent string from list', function() {
         var code = "items is a list\nadd 'a' to items\ntake 'b' from items";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual(["a"]);
+        expect(env.ctx.items.items()).toEqual(["a"]);
       });
 
       it('should do nothing if try to take non-existent obj from list', function() {
         var code = "mary is a person\nmary age is '1'\nisla is a person\nitems is a list\nadd isla to items\nadd mary to items\ntake mary from items";
         var env = interpreter.interpret(code);
-        expect(interpreter.resolve({ ref:"items" }, env).items()).toEqual([newObj("person")]);
+        expect(env.ctx.items.items()).toEqual([newObj("person")]);
       });
     });
   });
