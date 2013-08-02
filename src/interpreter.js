@@ -129,15 +129,14 @@
     })
 
     .when("identifier", function(node, env) { // for function names
-      return lookupVariable([node.c[0]], env);
+      var parts = [node.c[0]];
+      checkVariable(parts, env);
+      return lookupVariable(parts, env);
     })
 
     .when("variable", function(node, env) {
-      _.reduce(parts, function(a, x, i) {
-        return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
-      }, env.ctx);
-
       var parts = Isla.Parser.identifierParts(Isla.Parser.extract(node, "variable"), env);
+      checkVariable(parts, env);
       return lookupVariable(parts, env);
     })
 

@@ -1,3 +1,4 @@
+var parser = require('../src/parser').Parser;
 var interpreter = require('../src/interpreter').Interpreter;
 var library = require('../src/library').Library;
 
@@ -11,7 +12,43 @@ var newObj = function(type, data) {
 };
 
 describe('interpreter', function() {
-  describe('reference updating', function(){
+  describe('evaluateValue', function(){
+    it('should evaluate literal', function() {
+      var value = parser.extract(parser.parse("a is '1'"), "root", 0, "block", 0,
+                                 "expression", 0, "value_assignment", 2, "value", 0);
+      expect(interpreter.evaluateValue(value, {})).toEqual('1');
+    });
+
+    it('should evaluate variable', function() {
+      var assignee = parser.extract(parser.parse("a is '1'"), "root", 0, "block", 0,
+                                    "expression", 0, "value_assignment", 0, "assignee", 0);
+      expect(interpreter.evaluateValue(assignee, { ctx:{ a:'1' }})).toEqual('1');
+    });
+
+    it('should throw if no var', function() {
+      var assignee = parser.extract(parser.parse("a is '1'"), "root", 0, "block", 0,
+                                    "expression", 0, "value_assignment", 0, "assignee", 0);
+      expect(function() {
+        interpreter.evaluateValue(assignee, { ctx:{}})
+      }).toThrow('I have not heard of a.');
+    });
+
+    it('should evaluate fn name', function() {
+      var fn = parser.extract(parser.parse("write 'a'"), "root", 0, "block", 0,
+                              "expression", 0, "invocation", 0);
+      expect(interpreter.evaluateValue(fn, { ctx: { write:'' }})).toEqual('');
+    });
+
+    it('should throw if no fn', function() {
+      var fn = parser.extract(parser.parse("write 'a'"), "root", 0, "block", 0,
+                              "expression", 0, "invocation", 0);
+      expect(function() {
+        interpreter.evaluateValue(fn, { ctx:{}})
+      }).toThrow('I have not heard of write.');
+    });
+  });
+
+  describe('references', function(){
     it('should produce right data if follow scalar ref made before obj updated', function() {
       var code = "isla is a person\nfriend is isla\nisla age is '1'";
       var env = interpreter.interpret(code);
