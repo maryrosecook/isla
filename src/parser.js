@@ -72,8 +72,18 @@
     var nextArgs = _.rest(_.rest(_.toArray(args)));
     nextArgs.unshift(ast);
     return extract.apply(this, nextArgs);
-  }
+  };
+
+  var identifierParts = function(objNode, env) {
+    var parts = [];
+    for (var i = 0; i < objNode.length; i++) {
+      parts.push(extract(objNode, i, "identifier", 0));
+    }
+
+    return parts;
+  };
 
   exports.Parser.extract = extract;
   exports.Parser.find = find;
+  exports.Parser.identifierParts = identifierParts;
 })(typeof exports === 'undefined' ? this.Isla : exports);

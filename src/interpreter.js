@@ -127,25 +127,16 @@
     })
 
     .when("variable", function(node, env) {
-      var parts = identifierParts(Isla.Parser.extract(node, "variable"), env);
       _.reduce(parts, function(a, x, i) {
         return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
       }, env.ctx);
 
+      var parts = Isla.Parser.identifierParts(Isla.Parser.extract(node, "variable"), env);
       return lookupVariable(parts, env);
     })
 
   var nonExistentError = function(identifier) {
     throw { message:"I have not heard of " + identifier.join(" ") + "." };
-  };
-
-  var identifierParts = function(objNode, env) {
-    var parts = [];
-    for (var i = 0; i < objNode.length; i++) {
-      parts.push(Isla.Parser.extract(objNode, i, "identifier", 0));
-    }
-
-    return parts;
   };
 
   var assign = multimethod()
@@ -162,7 +153,7 @@
 
     .default(function(env, assigneeNode, value) {
       var objNode = Isla.Parser.extract(assigneeNode, "assignee", 0, "variable");
-      var parts = identifierParts(objNode, env);
+      var parts = Isla.Parser.identifierParts(objNode, env);
 
       _.reduce(parts.slice(0, parts.length - 1), function(a, x, i) {
         return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
