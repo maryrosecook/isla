@@ -113,6 +113,12 @@
     }, env.ctx);
   };
 
+  var checkVariable = function(parts, env) {
+    _.reduce(parts, function(a, x, i) {
+      return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
+    }, env.ctx);
+  };
+
   var evaluateValue = multimethod()
     .dispatch(function(node, env) {
       return node.tag;
@@ -203,6 +209,7 @@
 
   exports.Interpreter.instantiateType = instantiateType;
   exports.Interpreter.evaluateValue = evaluateValue;
+  exports.Interpreter.checkVariable = checkVariable;
   exports.Interpreter.lookupVariable = lookupVariable;
   exports.Interpreter.interpretAst = interpretAst;
 })(typeof exports === 'undefined' ? this.Isla : exports);
