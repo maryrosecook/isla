@@ -108,7 +108,7 @@
     });
 
   var checkVariable = function(parts, env) {
-    _.reduce(parts, function(a, x, i) {
+    return _.reduce(parts, function(a, x, i) {
       return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
     }, env.ctx);
   };
@@ -124,14 +124,12 @@
 
     .when("identifier", function(node, env) { // for function names
       var parts = [node.c[0]];
-      checkVariable(parts, env);
-      return lookupVariable(parts, env);
+      return checkVariable(parts, env);
     })
 
     .when("variable", function(node, env) {
       var parts = Isla.Parser.identifierParts(Isla.Parser.extract(node, "variable"), env);
-      checkVariable(parts, env);
-      return lookupVariable(parts, env);
+      return checkVariable(parts, env);
     })
 
   var nonExistentError = function(identifier) {
