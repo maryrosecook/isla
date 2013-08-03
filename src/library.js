@@ -92,29 +92,31 @@
   }
 
   var List = function() {
-    var data = [];
+    this.data = [];
+  };
 
-    this.add = multimethod()
+  List.prototype = {
+    add: multimethod()
       .dispatch(function(thing) {
         return Isla.Utils.type(thing);
       })
 
       // note: will always be refs unless part of list that is being resolved
       .when("Object", function(thing) {
-        for(var i = 0; i < data.length; i++) {
-          if (objsEqual(thing, data[i])) {
+        for(var i = 0; i < this.data.length; i++) {
+          if (objsEqual(thing, this.data[i])) {
             return;
           }
         }
 
-        data.push(thing);
+        this.data.push(thing);
       })
 
       .default(function(thing) {
-        data.push(thing);
-      })
+        this.data.push(thing);
+      }),
 
-    this.take = multimethod()
+    take: multimethod()
       .dispatch(function(thing) {
         return Isla.Utils.type(thing);
       })
@@ -122,28 +124,28 @@
       // note: will always be refs unless part of list that is being resolved
       .when("Object", function(thing) {
         // can't reject dupes where one resolved other ref - haven't got env
-        for(var i = 0; i < data.length; i++) {
-          if (objsEqual(thing, data[i])) {
-            data.splice(i, 1);
+        for(var i = 0; i < this.data.length; i++) {
+          if (objsEqual(thing, this.data[i])) {
+            this.data.splice(i, 1);
             break;
           }
         }
       })
 
       .default(function(thing) {
-        for(var i = 0; i < data.length; i++) {
-          if(thing === data[i]) {
-            data.splice(i, 1);
+        for(var i = 0; i < this.data.length; i++) {
+          if(thing === this.data[i]) {
+            this.data.splice(i, 1);
             break;
           }
         }
-      })
+      }),
 
-    this.items = function() {
-      return data;
-    };
+    items: function() {
+      return this.data;
+    },
 
-    this.toString = function(indent) {
+    toString: function(indent) {
       if (!indent) {
         indent = "  ";
       }
@@ -163,7 +165,7 @@
         return out;
       }
     }
-  }
+  };
 
   exports.Library.List = List;
 })(typeof exports === 'undefined' ? this.Isla : exports);
