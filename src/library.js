@@ -76,21 +76,6 @@
     }
   };
 
-  var sameRef = function(a, b) {
-    if (a === undefined || b === undefined) return false;
-    if (a.ref === undefined || b.ref === undefined) return false;
-    if (a.ref.length !== b.ref.length) return false;
-    return _.every(_.zip(a.ref, b.ref), function(x) {
-      return x[0] === x[1];
-    });
-  };
-
-  var objsEqual = function(a, b) {
-    // can't check for dupes where one resolved and other ref - haven't got env
-    return sameRef(a, b) ||
-      a === b; // same resolved obj
-  }
-
   var List = function() {
     this.data = [];
   };
@@ -104,7 +89,7 @@
       // note: will always be refs unless part of list that is being resolved
       .when("Object", function(thing) {
         for(var i = 0; i < this.data.length; i++) {
-          if (objsEqual(thing, this.data[i])) {
+          if (thing === this.data[i]) {
             return;
           }
         }
@@ -125,7 +110,7 @@
       .when("Object", function(thing) {
         // can't reject dupes where one resolved other ref - haven't got env
         for(var i = 0; i < this.data.length; i++) {
-          if (objsEqual(thing, this.data[i])) {
+          if (thing === this.data[i]) {
             this.data.splice(i, 1);
             break;
           }
