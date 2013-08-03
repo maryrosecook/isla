@@ -107,12 +107,6 @@
       throw { message:"You've forgotten a tag type." };
     });
 
-  var lookupVariable = function(parts, env) {
-    return _.reduce(parts, function(a, x) {
-      return a !== undefined ? a[x] : undefined;
-    }, env.ctx);
-  };
-
   var checkVariable = function(parts, env) {
     _.reduce(parts, function(a, x, i) {
       return a[x] !== undefined ? a[x] : nonExistentError(parts.slice(0, i + 1));
@@ -209,6 +203,5 @@
   exports.Interpreter.instantiateType = instantiateType;
   exports.Interpreter.evaluateValue = evaluateValue;
   exports.Interpreter.checkVariable = checkVariable;
-  exports.Interpreter.lookupVariable = lookupVariable;
   exports.Interpreter.interpretAst = interpretAst;
 })(typeof exports === 'undefined' ? this.Isla : exports);
