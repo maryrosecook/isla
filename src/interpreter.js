@@ -200,6 +200,5 @@
 
   exports.Interpreter.instantiateType = instantiateType;
   exports.Interpreter.evaluateValue = evaluateValue;
-  exports.Interpreter.checkVariable = checkVariable;
   exports.Interpreter.interpretAst = interpretAst;
 })(typeof exports === 'undefined' ? this.Isla : exports);
