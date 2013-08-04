@@ -18,7 +18,7 @@
 
   exports.Library = {};
 
-  exports.Library.getInitialEnv = function(extraTypes, initialCtx) {
+  var getInitialEnv = function() {
     var islaCtx = {
       write: {
         fn: function(env, param) {
@@ -34,7 +34,7 @@
         }
       },
 
-      _types: Isla.Utils.merge(extraTypes, {
+      _types: {
         list: function() {
           return new List();
         },
@@ -42,12 +42,8 @@
         generic: function() {
           return new Generic();
         }
-      })
+      }
     };
-
-    if(initialCtx !== undefined) {
-      islaCtx = Isla.Utils.merge(islaCtx, initialCtx);
-    }
 
     return {
       ret: null,
@@ -155,4 +151,5 @@
   };
 
   exports.Library.List = List;
+  exports.Library.getInitialEnv = getInitialEnv;
 })(typeof exports === 'undefined' ? this.Isla : exports);
