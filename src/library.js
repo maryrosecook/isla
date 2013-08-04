@@ -55,8 +55,10 @@
     };
   };
 
-  var Generic = function() {
-    this.toString = function(indent) {
+  var Generic = function() {};
+
+  Generic.prototype = {
+    toString: function(indent) {
       if (!indent) {
         indent = "  ";
       }
