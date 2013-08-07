@@ -3,7 +3,10 @@ var interpreter = require('../src/interpreter').Interpreter;
 var library = require('../src/library').Library;
 
 var newObj = function(type, data) {
-  var obj = { _meta: { type: type } };
+  var obj = {
+    _meta: { type: type },
+    constructor: library.Generic,
+  };
   for(var i in data) {
     obj[i] = data[i];
   }

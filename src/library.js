@@ -54,6 +54,8 @@
   var Generic = function() {};
 
   Generic.prototype = {
+    constructor: Generic,
+
     toString: function(indent) {
       if (!indent) {
         indent = "  ";
@@ -79,6 +81,8 @@
   };
 
   List.prototype = {
+    constructor: List,
+
     add: multimethod()
       .dispatch(function(thing) {
         return Isla.Utils.type(thing);
