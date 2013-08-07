@@ -155,5 +155,6 @@
   };
 
   exports.Library.List = List;
+  exports.Library.Generic = Generic;
   exports.Library.getInitialEnv = getInitialEnv;
 })(typeof exports === 'undefined' ? this.Isla : exports);
