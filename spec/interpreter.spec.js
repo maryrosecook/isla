@@ -6,6 +6,7 @@ var newObj = function(type, data) {
   var obj = {
     _meta: { type: type },
     constructor: library.Generic,
+    clone: library.Generic.prototype.clone,
   };
   for(var i in data) {
     obj[i] = data[i];

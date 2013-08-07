@@ -47,8 +47,42 @@
 
     return {
       ret: null,
-      ctx: islaCtx
+      ctx: islaCtx,
+      clone: function() {
+        var e = getInitialEnv();
+        e.ret = clone(this.ret);
+        e.ctx = clone(this.ctx);
+        return e;
+      }
     };
+  };
+
+  var clone = function(o) {
+    if (o instanceof List || o instanceof Generic) {
+      return o.clone();
+    } else if (Isla.Utils.type(o) === "Array") {
+      var c = [];
+      for (var i = 0; i < o.length; i++) {
+        c[i] = clone(o[i]);
+      }
+      return c;
+    } else if (Isla.Utils.type(o) === "Object") {
+      var c = {};
+      extendObj(o, c);
+      return c;
+    } else if (Isla.Utils.type(o) === "String") {
+      return o;
+    } else {
+      return undefined;
+    }
+  };
+
+  var extendObj = function(from, to) {
+    for (var i in from) {
+      if (from.hasOwnProperty(i)) {
+        to[i] = clone(from[i]);
+      }
+    }
   };
 
   var Generic = function() {};
@@ -73,6 +107,12 @@
       }
 
       return out;
+    },
+
+    clone: function() {
+      var c = new Generic();
+      extendObj(this, c);
+      return c;
     }
   };
 
@@ -151,6 +191,12 @@
 
         return out;
       }
+    },
+
+    clone: function() {
+      var c = new List();
+      c.data = clone(this.data);
+      return c;
     }
   };
 
