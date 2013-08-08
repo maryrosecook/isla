@@ -128,6 +128,18 @@ describe('library', function() {
           e.ctx.generic.one = "1";
           expect(e.clone().ctx.generic.one).toEqual("1");
         });
+
+        it('should clone built in write fn', function() {
+          var clonedEnv = library.getInitialEnv().clone();
+          expect(clonedEnv.ctx.write.fn instanceof Function).toEqual(true);
+          expect(clonedEnv.ctx.write.description instanceof Function).toEqual(true);
+        });
+
+        it('should clone built in types', function() {
+          var clonedEnv = library.getInitialEnv().clone();
+          expect(clonedEnv.ctx._types.list instanceof Function).toEqual(true);
+          expect(clonedEnv.ctx._types.generic instanceof Function).toEqual(true);
+        });
       });
     });
   });
