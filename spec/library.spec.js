@@ -140,6 +140,14 @@ describe('library', function() {
           expect(clonedEnv.ctx._types.list instanceof Function).toEqual(true);
           expect(clonedEnv.ctx._types.generic instanceof Function).toEqual(true);
         });
+
+        it('should not find vars added to clone in original', function() {
+          var e = library.getInitialEnv();
+          var c = e.clone();
+          interpreter.interpret("a is '1'", c);
+          expect(e.ctx.a).toBeUndefined();
+          expect(c.ctx.a).toEqual("1");
+        });
       });
     });
   });
