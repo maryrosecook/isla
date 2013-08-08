@@ -70,7 +70,7 @@
       var c = {};
       extendObj(o, c);
       return c;
-    } else if (Isla.Utils.type(o) === "String") {
+    } else if (Isla.Utils.type(o) === "String" || Isla.Utils.type(o) === "Function") {
       return o;
     } else {
       return undefined;
