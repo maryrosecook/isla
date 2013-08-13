@@ -161,6 +161,7 @@ describe('library', function() {
           expect(e.ctx.a === e.ctx.b).toEqual(false);
 
           var c = e.clone();
+          expect(e.ctx.a.shared !== c.ctx.a.shared).toEqual(true);
           expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
         });
 
@@ -175,6 +176,7 @@ describe('library', function() {
           expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
 
           var c = e.clone();
+          expect(e.ctx.a.shared !== c.ctx.a.shared).toEqual(true);
           expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
         });
 
@@ -187,6 +189,7 @@ describe('library', function() {
           expect(e.ctx.a === e.ctx.b).toEqual(false);
 
           var c = e.clone();
+          expect(e.ctx.a.shared !== c.ctx.a.shared).toEqual(true);
           expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
         });
 
@@ -199,6 +202,7 @@ describe('library', function() {
           expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
 
           var c = e.clone();
+          expect(e.ctx.a.shared !== c.ctx.a.shared).toEqual(true);
           expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
         });
 
@@ -212,8 +216,12 @@ describe('library', function() {
           expect(e.ctx.a === e.ctx.b).toEqual(false);
 
           var c = e.clone();
+          expect(e.ctx.a.shared !== c.ctx.a.shared).toEqual(true);
           expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+
+          expect(e.ctx.a.shared.shared !== c.ctx.a.shared.shared).toEqual(true);
           expect(c.ctx.a.shared.shared === c.ctx.b.shared.shared).toEqual(true);
+
           expect(c.ctx.a.shared === c.ctx.shared2).toEqual(true);
           expect(c.ctx.a.shared.shared === c.ctx.shared1).toEqual(true);
         });
