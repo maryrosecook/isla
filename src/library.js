@@ -81,7 +81,8 @@
         extendObj(o, c, clones);
       } else if (Isla.Utils.type(o) === "String" ||
                  Isla.Utils.type(o) === "Boolean" ||
-                 Isla.Utils.type(o) === "Function") {
+                 Isla.Utils.type(o) === "Function" ||
+                 Isla.Utils.type(o) === "Number" ||
                  o === null) {
         c = o;
       }
