@@ -149,6 +149,75 @@ describe('library', function() {
           expect(c.ctx.a).toEqual("1");
         });
       });
+
+      describe('references', function(){
+        it('should reproduce in clone shared generic via ref', function() {
+          var e = library.getInitialEnv()
+          e.ctx.shared = new library.Generic();
+          e.ctx.a = new library.Generic();
+          e.ctx.b = new library.Generic();
+          e.ctx.a.shared = e.ctx.b.shared = e.ctx.shared;
+          expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
+          expect(e.ctx.a === e.ctx.b).toEqual(false);
+
+          var c = e.clone();
+          expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+        });
+
+        it('should reproduce in clone shared list via ref', function() {
+          var e = library.getInitialEnv()
+          e.ctx.shared = new library.List();
+          e.ctx.shared.add(1);
+          e.ctx.shared.add(2);
+          e.ctx.a = new library.Generic();
+          e.ctx.b = new library.Generic();
+          e.ctx.a.shared = e.ctx.b.shared = e.ctx.shared;
+          expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
+
+          var c = e.clone();
+          expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+        });
+
+        it('should reproduce in clone shared obj via ref', function() {
+          var e = library.getInitialEnv()
+          e.ctx.shared = {};
+          e.ctx.a = { shared: e.ctx.shared };
+          e.ctx.b = { shared: e.ctx.shared };
+          expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
+          expect(e.ctx.a === e.ctx.b).toEqual(false);
+
+          var c = e.clone();
+          expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+        });
+
+        it('should reproduce in clone shared array via ref', function() {
+          var e = library.getInitialEnv()
+          e.ctx.shared = [1, 2];
+          e.ctx.a = new library.Generic();
+          e.ctx.b = new library.Generic();
+          e.ctx.a.shared = e.ctx.b.shared = e.ctx.shared;
+          expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
+
+          var c = e.clone();
+          expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+        });
+
+        it('should reproduce in clone shared obj inside shared obj via refs', function() {
+          var e = library.getInitialEnv()
+          e.ctx.shared1 = {};
+          e.ctx.shared2 = { shared: e.ctx.shared1 }
+          e.ctx.a = { shared: e.ctx.shared2 };
+          e.ctx.b = { shared: e.ctx.shared2 };
+          expect(e.ctx.a.shared === e.ctx.b.shared).toEqual(true);
+          expect(e.ctx.a === e.ctx.b).toEqual(false);
+
+          var c = e.clone();
+          expect(c.ctx.a.shared === c.ctx.b.shared).toEqual(true);
+          expect(c.ctx.a.shared.shared === c.ctx.b.shared.shared).toEqual(true);
+          expect(c.ctx.a.shared === c.ctx.shared2).toEqual(true);
+          expect(c.ctx.a.shared.shared === c.ctx.shared1).toEqual(true);
+        });
+      });
     });
   });
 });
