@@ -82,6 +82,7 @@
       } else if (Isla.Utils.type(o) === "String" ||
                  Isla.Utils.type(o) === "Boolean" ||
                  Isla.Utils.type(o) === "Function") {
+                 o === null) {
         c = o;
       }
 
