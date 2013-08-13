@@ -107,12 +107,6 @@
       }
 
       return out;
-    },
-
-    clone: function() {
-      var c = new Generic();
-      extendObj(this, c);
-      return c;
     }
   };
 
@@ -191,16 +185,11 @@
 
         return out;
       }
-    },
-
-    clone: function() {
-      var c = new List();
-      c.data = clone(this.data);
-      return c;
     }
   };
 
   exports.Library.List = List;
   exports.Library.Generic = Generic;
   exports.Library.getInitialEnv = getInitialEnv;
+  exports.Library.clone = clone; // exported for testing
 })(typeof exports === 'undefined' ? this.Isla : exports);

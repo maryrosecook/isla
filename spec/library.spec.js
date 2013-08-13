@@ -50,10 +50,10 @@ describe('library', function() {
           var l = new library.List();
           l.add("1");
           l.add("2");
-          expect(l.clone().items()[0]).toEqual("1");
-          expect(l.clone().items()[1]).toEqual("2");
-          expect(l.clone() !== l).toEqual(true);
-          expect(l.clone().constructor === library.List).toEqual(true);
+          expect(library.clone(l).items()[0]).toEqual("1");
+          expect(library.clone(l).items()[1]).toEqual("2");
+          expect(library.clone(l) !== l).toEqual(true);
+          expect(library.clone(l).constructor === library.List).toEqual(true);
         });
 
         it('should clone list inside list', function() {
@@ -61,9 +61,9 @@ describe('library', function() {
           var innerL = new library.List();
           innerL.add("1");
           l.add(innerL);
-          expect(l.clone().items()[0].items()[0]).toEqual("1");
-          expect(l.clone().items()[0] !== innerL).toEqual(true);
-          expect(l.clone().items()[0].constructor === library.List).toEqual(true);
+          expect(library.clone(l).items()[0].items()[0]).toEqual("1");
+          expect(library.clone(l).items()[0] !== innerL).toEqual(true);
+          expect(library.clone(l).items()[0].constructor === library.List).toEqual(true);
         });
 
         it('should clone generic inside list', function() {
@@ -71,9 +71,9 @@ describe('library', function() {
           var g = new library.Generic();
           g.la = "1";
           l.add(g);
-          expect(l.clone().items()[0].la).toEqual("1");
-          expect(l.clone() !== l).toEqual(true);
-          expect(l.clone().items()[0].constructor === library.Generic).toEqual(true);
+          expect(library.clone(l).items()[0].la).toEqual("1");
+          expect(library.clone(l) !== l).toEqual(true);
+          expect(library.clone(l).items()[0].constructor === library.Generic).toEqual(true);
         });
       });
 
@@ -82,10 +82,10 @@ describe('library', function() {
           var g = new library.Generic();
           g.one = "1";
           g.two = "2";
-          expect(g.clone().one).toEqual("1");
-          expect(g.clone().two).toEqual("2");
-          expect(g.clone() !== g).toEqual(true);
-          expect(g.clone() instanceof library.Generic).toEqual(true);
+          expect(library.clone(g).one).toEqual("1");
+          expect(library.clone(g).two).toEqual("2");
+          expect(library.clone(g) !== g).toEqual(true);
+          expect(library.clone(g) instanceof library.Generic).toEqual(true);
         });
 
         it('should clone a list inside a generic', function() {
@@ -93,9 +93,9 @@ describe('library', function() {
           var l = new library.List();
           l.add("1");
           g.l = l;
-          expect(g.clone().l.items()[0]).toEqual("1");
-          expect(g.clone().l !== l).toEqual(true);
-          expect(g.clone().l.constructor === library.List).toEqual(true);
+          expect(library.clone(g).l.items()[0]).toEqual("1");
+          expect(library.clone(g).l !== l).toEqual(true);
+          expect(library.clone(g).l.constructor === library.List).toEqual(true);
         });
 
         it('should clone generic inside generic', function() {
@@ -103,9 +103,9 @@ describe('library', function() {
           var innerG = new library.Generic();
           innerG.one = "1";
           g.innerG = innerG;
-          expect(g.clone().innerG.one).toEqual("1");
-          expect(g.clone().innerG !== innerG).toEqual(true);
-          expect(g.clone().innerG.constructor === library.Generic).toEqual(true);
+          expect(library.clone(g).innerG.one).toEqual("1");
+          expect(library.clone(g).innerG !== innerG).toEqual(true);
+          expect(library.clone(g).innerG.constructor === library.Generic).toEqual(true);
         });
       });
 
