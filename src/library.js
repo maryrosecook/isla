@@ -57,30 +57,45 @@
     };
   };
 
-  var clone = function(o) {
-    if (o instanceof List || o instanceof Generic) {
-      return o.clone();
-    } else if (Isla.Utils.type(o) === "Array") {
-      var c = [];
-      for (var i = 0; i < o.length; i++) {
-        c[i] = clone(o[i]);
+  var clone = function(o, clones) {
+    if (clones === undefined) {
+      clones = [];
+    }
+
+    var existingClone = _.find(clones, function(x) { return o === x.original; });
+    if (existingClone === undefined) {
+      var c;
+      if (o instanceof List) {
+        c = new List();
+        c.data = clone(o.data, clones);
+      } else if (o instanceof Generic) {
+        c = new Generic();
+        extendObj(o, c, clones);
+      } else if (Isla.Utils.type(o) === "Array") { // for codewisla demo ctx
+        c = [];
+        for (var i = 0; i < o.length; i++) {
+          c[i] = clone(o[i], clones);
+        }
+      } else if (Isla.Utils.type(o) === "Object") { // for codewisla demo ctx
+        c = {};
+        extendObj(o, c, clones);
+      } else if (Isla.Utils.type(o) === "String" ||
+                 Isla.Utils.type(o) === "Boolean" ||
+                 Isla.Utils.type(o) === "Function") {
+        c = o;
       }
+
+      clones.push({ clone: c, original: o });
       return c;
-    } else if (Isla.Utils.type(o) === "Object") {
-      var c = {};
-      extendObj(o, c);
-      return c;
-    } else if (Isla.Utils.type(o) === "String" || Isla.Utils.type(o) === "Function") {
-      return o;
     } else {
-      return undefined;
+      return existingClone.clone;
     }
   };
 
-  var extendObj = function(from, to) {
+  var extendObj = function(from, to, clones) {
     for (var i in from) {
       if (from.hasOwnProperty(i)) {
-        to[i] = clone(from[i]);
+        to[i] = clone(from[i], clones);
       }
     }
   };
