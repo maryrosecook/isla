@@ -18,8 +18,22 @@
 
   exports.Library = {};
 
+  var Env = function(ctx) {
+    this.ret = null;
+    this.ctx = ctx;
+  };
+
+  Env.prototype = {
+    clone: function() {
+      var e = getInitialEnv();
+      e.ret = clone(this.ret);
+      e.ctx = clone(this.ctx);
+      return e;
+    }
+  };
+
   var getInitialEnv = function() {
-    var islaCtx = {
+    return new Env({
       write: {
         fn: function(env, param) {
           if(Isla.Utils.type(param) === "Object") {
@@ -43,18 +57,7 @@
           return new Generic();
         }
       }
-    };
-
-    return {
-      ret: null,
-      ctx: islaCtx,
-      clone: function() {
-        var e = getInitialEnv();
-        e.ret = clone(this.ret);
-        e.ctx = clone(this.ctx);
-        return e;
-      }
-    };
+    });
   };
 
   var clone = function(o, clones) {
