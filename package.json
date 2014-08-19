@@ -7,6 +7,10 @@
     "test": "node_modules/jasmine-node/bin/jasmine-node spec/",
     "prepublish": "node scripts/minifier.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maryrosecook/isla.git"
+  },
   "dependencies": {
     "pegjs": "0.7.0",
     "multimethod": "0.1.0",
