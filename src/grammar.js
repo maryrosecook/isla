@@ -113,10 +113,5 @@
     "string_char_single = [A-Za-z0-9., \"]"
   ];
 
-  var peg = "";
-  for (var i = 0; i < grammarArr.length; i++) {
-    peg += grammarArr[i] + "\n";
-  }
-
-  exports.Grammar.peg = peg;
+  exports.Grammar.peg = grammarArr.join('\n');
 })(typeof exports === 'undefined' ? this.Isla : exports);
