@@ -26,10 +26,10 @@ For more details on the language, see the language guide: https://github.com/mar
 
 Install Node.js and npm: https://github.com/isaacs/npm
 
-Install Isla
+Install Isla. This will clone the official git repo and then install it. 
 
-    $ npm install isla
-    $ cd path/to/isla
+    $ git clone https://github.com/maryrosecook/isla
+    $ cd isla
     $ npm install
 
 ## Run
